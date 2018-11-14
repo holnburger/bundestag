@@ -2,7 +2,7 @@
 title: "Geschlechterunterschiede im Deutschen Bundestag"
 author: "Josef Holnburger und Gina-Gabriela Görner"
 site: bookdown::bookdown_site
-bibliography: Forschungskolloqium.bib
+bibliography: book.bib
 link-citations: yes
 documentclass: scrbook
 classoption: oneside, 12pt
