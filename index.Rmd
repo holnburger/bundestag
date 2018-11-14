@@ -19,4 +19,4 @@ Die Konstruktion der *hard* und *soft topics* geht dabei auf @wangnerud_2000 zur
 
 In dieser Arbeit soll anders vorgegangen werden. Die Inhalte der Reden im Bundestaug sollen ohne voherige Identifikation vermeintlicher Frauen- und Männerthemen untersucht werden. Hierbei nutzen wir die Möglichkeiten des  *Topic Modelling* um zunächst generell Themen der Reden im Bundestags zu identifizieren und diese anschließend auf mögliche Geschlechterunterschiede untersuchen. Natürlich wollen auch wir die Unterschiedlichen Redeanteile untersuchen.
 
-Da ich den Prinipien der Open Science sehr viel abgewinnen kann, soll die Erhebung und Auswertung möglichst transparent und nachvollziehbar dargestellt werden.
+Da ich den Prinzipien der Open Science sehr viel abgewinnen kann, soll die Erhebung und Auswertung möglichst transparent und nachvollziehbar dargestellt werden.

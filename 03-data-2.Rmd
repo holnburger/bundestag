@@ -1,6 +1,6 @@
 # Datenerhebung Teil 2 {#data-02}
 
-Leider gibt es keine Möglichkeit, die XML-Protokolle des Deutschen Bundesatages gesammelt herunterzuladen. Zwar findet sich auf *Open Data*-Seite des Bundestags^[https://www.bundestag.de/service/opendata] ein Verweis auf
+Leider gibt es keine Möglichkeit, die XML-Protokolle des Deutschen Bundesatages gesammelt herunterzuladen. Zwar findet sich auf *Open Data*-Seite des Bundestags^[https://www.bundestag.de/service/opendata] ein Verweis auf die Protkolle im XML-Format, allerdings lassen sie sich von dieser Seite nur mit mehreren Klicks installieren.$
 
 ```{r}
 source("functions/get_overview_df.R")
