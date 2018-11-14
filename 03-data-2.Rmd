@@ -1,8 +1,83 @@
 # Datenerhebung Teil 2 {#data-02}
 
-Leider gibt es keine Möglichkeit, die XML-Protokolle des Deutschen Bundesatages gesammelt herunterzuladen. Zwar findet sich auf *Open Data*-Seite des Bundestags^[https://www.bundestag.de/service/opendata] ein Verweis auf die Protkolle im XML-Format, allerdings lassen sie sich von dieser Seite nur mit mehreren Klicks installieren.$
+Leider gibt es keine Möglichkeit, die XML-Protokolle des Deutschen Bundestages gesammelt herunterzuladen. Zwar finden sich auf *Open Data*-Seite des Bundestags^[https://www.bundestag.de/service/opendata] die Verweise auf die Bundestagsprotkolle, allerdings können diese nur umständlich einezln heruntergeladen werden.
+Durch das Auslesen der Netzwerkdaten nach einem Klick auf die nächsten fünf Protkolle eine Webseite gefunden werden, auf welcher jeweils fünf Protkolle gespeichert sind^[https://www.bundestag.de/ajax/filterlist/de/service/opendata/-/543410?offset=0]. Durch setzen des `offset=0` auf `5, 10, 15, 20, …` können wir die weiteren Protokolle abrufen. 
+
+Mittels `rvest` und `xml2` ziehen wir uns zunächst die Nummer des letzten Bundestagsprotokolls. Über die Funktion `seq()` und `paste0()` können wir anschließend alle für den weiteren Verlauf notwendigen URLs erstellen.
+```{r, warning=FALSE,message=FALSE, include=FALSE}
+library(rvest)
+library(tidyverse)
+library(xml2)
+```
+
+```{r}
+bt_website <- "https://www.bundestag.de/ajax/filterlist/de/service/opendata/-/543410"
+
+last_protocol <- bt_website %>% 
+  read_html() %>%
+  xml_find_first("//strong") %>% 
+  xml_text(trim = TRUE) %>%
+  str_extract("\\d+")
+
+prot_websites <- paste0(bt_website, "?offset=", seq(0, last_protocol, 5))
+```
+
+Insgesamt müssen wir also `r length(prot_websites)` Webseiten aufrufen und uns jeweils fünf Protokolle herunterladen.
+
+Der Aufwand ist hier noch überschaubar. Natürlich laden wir die Protokolle dennoch nicht per Hand herunter, sondern erstellen uns hierfür ein kleines Script. Da die meisten Rechner auch mit mehr als nur einem Prozessor ausgestattet sind, können wir die Funktion auch auf mehreren Prozessoren ausführen. Wir sprechen hier von *multiprocessing*. Dies realisieren wir über das Packet `furrr` [@vaughan_2018] - eine Abwandlung des bereits genutzten `purrr`.
+
+Wir schreiben uns zunächst eine Funktion, um die Links der Webseiten zu extrahieren.
+
+```{r}
+get_prot_links <- function(x){
+  x %>%
+    read_html() %>%
+    html_nodes(".bt-link-dokument") %>%
+    html_attr("href") %>%
+    paste0("https://www.bundestag.de", .)
+  }
+
+get_prot_links(bt_website)
+```
+
+Dies wenden wir nun auf alle `r length(prot_websites)` Webseiten an und speichern die Dateien anschließend im Ordner `data\protokolle`.
+
+```{r, eval=FALSE}
+library(furrr)
+plan(multiprocess)
+
+prot_links <- future_map(prot_websites, ~get_prot_links(.)) %>% unlist()
+
+prot_links %>% future_map(~download.file(., file.path("data", basename(.))))
+```
+
+Wir waren erfolgreich und konnten in wenigsten Sekunden alle aktuellen Protokolle herunterladen. Wir können sie jetzt auslesen und dabei auch unsere bereits erstellten Funktionen verwenden. Jetzt können wir alle Dateien einlesen, die Übersicht der Reden oder den Inhalt der Reden extrahieren und anschließend auswerten.
 
 ```{r}
 source("functions/get_overview_df.R")
 source("functions/get_speeches_df.R")
 ```
+
+```{r, cache=TRUE}
+prot_files <- list.files("data", full.names = TRUE)
+
+prot_extract <- map(prot_files, ~read_html(.) %>% xml_find_all("//rede"))
+
+class(prot_extract) <- "xml_nodeset"
+
+prot_overview <- map_dfr(prot_extract, ~get_overview_df(.))
+```
+
+## Zwischenfazit
+
+Wir konnten nun alle Dateien herunterladen und anschließend alle Protkolle in R einlesen. Mit unserer Funktion `get_overview_df()` konnten wir alle Protokolle in einen für uns passenden Datenframe umwandeln. Insgesamt können wir derzeit 5.777 Reden des aktuellen Bundestags untersuchen -- etwa nach der Person, welche die meisten reden gehalten hat.
+
+```{r}
+prot_overview %>% 
+  group_by(redner_id, redner_vorname, redner_nachname,
+           redner_fraktion, redner_rolle) %>% 
+  summarise(reden = n()) %>%
+  arrange(-reden)
+```
+
+Die Minister_innen haben am häuiigsten im Bundestag geredet, der MdB Volker Ullrich landet erst af Platz 4 mit insgesamt vierzig Reden in der aktuellen Wahlperiode. Überraschenderweise hat Frauke Petry sehr viele Reden gehalten: 35 Stück. Das sind deutlich mehr als in ihrer damaligen Zeit im Landesparlament.

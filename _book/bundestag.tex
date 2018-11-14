@@ -248,7 +248,7 @@
 \hypertarget{intro}{%
 \chapter{Einleitung}\label{intro}}
 
-Zusammen mit Gina-Gabriele Görner analysiere ich die Protokolle des
+Zusammen mit Gina-Gabriela Görner analysiere ich die Protokolle des
 Deutschen Bundestages auf mögliche Geschlechterunterschiede. Hierfür
 wollen wir die Anzahl aber auch Inhalte der Reden mehrer Wahlperioden
 des Bundestags untersuchen. Dieses Projekt wurde auch für die
@@ -545,6 +545,20 @@ Präsidiums sonst falsch zugeordnet werden.
 \StringTok{    }\KeywordTok{select}\NormalTok{(rede_id, rede, id, vorname, nachname, fraktion, präsidium, typ, status)}
 \NormalTok{\}}
 
+\NormalTok{get_overview_df <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(x)\{}
+\NormalTok{  rede_id <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_attr}\NormalTok{(}\StringTok{"id"}\NormalTok{)}
+\NormalTok{  redner_id <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_node}\NormalTok{(}\StringTok{"redner"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_attr}\NormalTok{(}\StringTok{"id"}\NormalTok{)}
+\NormalTok{  redner_vorname <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_node}\NormalTok{(}\StringTok{"redner"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_node}\NormalTok{(}\StringTok{"vorname"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_text}\NormalTok{()}
+\NormalTok{  redner_nachname <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_node}\NormalTok{(}\StringTok{"redner"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_node}\NormalTok{(}\StringTok{"nachname"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_text}\NormalTok{()}
+\NormalTok{  redner_fraktion <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_node}\NormalTok{(}\StringTok{"redner"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_node}\NormalTok{(}\StringTok{"fraktion"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_text}\NormalTok{()}
+\NormalTok{  redner_rolle <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_node}\NormalTok{(}\StringTok{"rolle_kurz"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_text}\NormalTok{()}
+\NormalTok{  sitzung <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_find_first}\NormalTok{(}\StringTok{"//sitzungsnr"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_text}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{as.integer}\NormalTok{()}
+\NormalTok{  datum <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_find_first}\NormalTok{(}\StringTok{"//datum"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_attr}\NormalTok{(}\StringTok{"date"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\NormalTok{lubridate}\OperatorTok{::}\KeywordTok{dmy}\NormalTok{()}
+\NormalTok{  wahlperiode <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_find_first}\NormalTok{(}\StringTok{"//wahlperiode"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_text}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{as.integer}\NormalTok{()}
+  
+  \KeywordTok{data_frame}\NormalTok{(rede_id, redner_id, redner_vorname, redner_nachname, redner_fraktion, redner_rolle, sitzung, datum, wahlperiode)}
+\NormalTok{\}}
+
 \NormalTok{speeches_df <-}\StringTok{ }\KeywordTok{get_speeches_df}\NormalTok{(prot_speeches)}
 \end{Highlighting}
 \end{Shaded}
@@ -607,10 +621,93 @@ in Kapitel \ref{data-02}. Die beiden Funktionen speichern wir im Ordner
 \chapter{Datenerhebung Teil 2}\label{data-02}}
 
 Leider gibt es keine Möglichkeit, die XML-Protokolle des Deutschen
-Bundesatages gesammelt herunterzuladen. Zwar findet sich auf \emph{Open
+Bundestages gesammelt herunterzuladen. Zwar finden sich auf \emph{Open
 Data}-Seite des Bundestags\footnote{\url{https://www.bundestag.de/service/opendata}}
-ein Verweis auf die Protkolle im XML-Format, allerdings lassen sie sich
-von dieser Seite nur mit mehreren Klicks installieren.\$
+die Verweise auf die Bundestagsprotkolle, allerdings können diese nur
+umständlich einezln heruntergeladen werden. Durch das Auslesen der
+Netzwerkdaten nach einem Klick auf die nächsten fünf Protkolle eine
+Webseite gefunden werden, auf welcher jeweils fünf Protkolle gespeichert
+sind\footnote{\url{https://www.bundestag.de/ajax/filterlist/de/service/opendata/-/543410?offset=0}}.
+Durch setzen des \texttt{offset=0} auf
+\texttt{5,\ 10,\ 15,\ 20,\ \ldots{}} können wir die weiteren Protokolle
+abrufen.
+
+Mittels \texttt{rvest} und \texttt{xml2} ziehen wir uns zunächst die
+Nummer des letzten Bundestagsprotokolls. Über die Funktion
+\texttt{seq()} und \texttt{paste0()} können wir anschließend alle für
+den weiteren Verlauf notwendigen URLs erstellen.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{bt_website <-}\StringTok{ "https://www.bundestag.de/ajax/filterlist/de/service/opendata/-/543410"}
+
+\NormalTok{last_protocol <-}\StringTok{ }\NormalTok{bt_website }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{read_html}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{xml_find_first}\NormalTok{(}\StringTok{"//strong"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{xml_text}\NormalTok{(}\DataTypeTok{trim =} \OtherTok{TRUE}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{str_extract}\NormalTok{(}\StringTok{"}\CharTok{\textbackslash{}\textbackslash{}}\StringTok{d+"}\NormalTok{)}
+
+\NormalTok{prot_websites <-}\StringTok{ }\KeywordTok{paste0}\NormalTok{(bt_website, }\StringTok{"?offset="}\NormalTok{, }\KeywordTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, last_protocol, }\DecValTok{5}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+Insgesamt müssen wir also 13 Webseiten aufrufen und uns jeweils fünf
+Protokolle herunterladen.
+
+Der Aufwand ist hier noch überschaubar. Natürlich laden wir die
+Protokolle dennoch nicht per Hand herunter, sondern erstellen uns
+hierfür ein kleines Script. Da die meisten Rechner auch mit mehr als nur
+einem Prozessor ausgestattet sind, können wir die Funktion auch auf
+mehreren Prozessoren ausführen. Wir sprechen hier von
+\emph{multiprocessing}. Dies realisieren wir über das Packet
+\texttt{furrr} (Vaughan/Dancho
+\protect\hyperlink{ref-vaughan_2018}{2018}) - eine Abwandlung des
+bereits genutzten \texttt{purrr}.
+
+Wir schreiben uns zunächst eine Funktion, um die Links der Webseiten zu
+extrahieren.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{get_prot_links <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(x)\{}
+\NormalTok{  x }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{read_html}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{html_nodes}\NormalTok{(}\StringTok{".bt-link-dokument"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{html_attr}\NormalTok{(}\StringTok{"href"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{paste0}\NormalTok{(}\StringTok{"https://www.bundestag.de"}\NormalTok{, .)}
+\NormalTok{  \}}
+
+\KeywordTok{get_prot_links}\NormalTok{(bt_website)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "https://www.bundestag.de/blob/578466/7430bccaf792e7bc55e84d5e64675820/19062-data.xml"
+## [2] "https://www.bundestag.de/blob/577958/e2063c0f51a32690a269f48aa6102c1d/19061-data.xml"
+## [3] "https://www.bundestag.de/blob/577622/da97888b713abb16ed2070836504b83a/19060-data.xml"
+## [4] "https://www.bundestag.de/blob/575138/b5395a975d1c55838da0e52251018160/19059-data.xml"
+## [5] "https://www.bundestag.de/blob/574826/0e3659e11c1c3cdbfa621369cd16735a/19058-data.xml"
+\end{verbatim}
+
+Dies wenden wir nun auf alle 13 Webseiten an und speichern die Dateien
+anschließend im Ordner \texttt{data\textbackslash{}protokolle}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(furrr)}
+\KeywordTok{plan}\NormalTok{(multiprocess)}
+
+\NormalTok{prot_links <-}\StringTok{ }\KeywordTok{future_map}\NormalTok{(prot_websites, }\OperatorTok{~}\KeywordTok{get_prot_links}\NormalTok{(.)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{unlist}\NormalTok{()}
+
+\NormalTok{prot_links }\OperatorTok{%>%}\StringTok{ }\KeywordTok{future_map}\NormalTok{(}\OperatorTok{~}\KeywordTok{download.file}\NormalTok{(., }\KeywordTok{file.path}\NormalTok{(}\StringTok{"data"}\NormalTok{, }\KeywordTok{basename}\NormalTok{(.))))}
+\end{Highlighting}
+\end{Shaded}
+
+Wir waren erfolgreich und konnten in wenigsten Sekunden alle aktuellen
+Protokolle herunterladen. Wir können sie jetzt auslesen und dabei auch
+unsere bereits erstellten Funktionen verwenden. Jetzt können wir alle
+Dateien einlesen, die Übersicht der Reden oder den Inhalt der Reden
+extrahieren und anschließend auswerten.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -618,6 +715,63 @@ von dieser Seite nur mit mehreren Klicks installieren.\$
 \KeywordTok{source}\NormalTok{(}\StringTok{"functions/get_speeches_df.R"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{prot_files <-}\StringTok{ }\KeywordTok{list.files}\NormalTok{(}\StringTok{"data"}\NormalTok{, }\DataTypeTok{full.names =} \OtherTok{TRUE}\NormalTok{)}
+
+\NormalTok{prot_extract <-}\StringTok{ }\KeywordTok{map}\NormalTok{(prot_files, }\OperatorTok{~}\KeywordTok{read_html}\NormalTok{(.) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_find_all}\NormalTok{(}\StringTok{"//rede"}\NormalTok{))}
+
+\KeywordTok{class}\NormalTok{(prot_extract) <-}\StringTok{ "xml_nodeset"}
+
+\NormalTok{prot_overview <-}\StringTok{ }\KeywordTok{map_dfr}\NormalTok{(prot_extract, }\OperatorTok{~}\KeywordTok{get_overview_df}\NormalTok{(.))}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{zwischenfazit-1}{%
+\section{Zwischenfazit}\label{zwischenfazit-1}}
+
+Wir konnten nun alle Dateien herunterladen und anschließend alle
+Protkolle in R einlesen. Mit unserer Funktion
+\texttt{get\_overview\_df()} konnten wir alle Protokolle in einen für
+uns passenden Datenframe umwandeln. Insgesamt können wir derzeit 5.777
+Reden des aktuellen Bundestags untersuchen -- etwa nach der Person,
+welche die meisten reden gehalten hat.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{prot_overview }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(redner_id, redner_vorname, redner_nachname,}
+\NormalTok{           redner_fraktion, redner_rolle) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{reden =} \KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{reden)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 773 x 6
+## # Groups:   redner_id, redner_vorname, redner_nachname, redner_fraktion
+## #   [728]
+##    redner_id redner_vorname redner_nachname redner_fraktion redner_rolle
+##    <chr>     <chr>          <chr>           <chr>           <chr>       
+##  1 11002617  Peter          Altmaier        <NA>            Bundesminis~
+##  2 999990073 Olaf           Scholz          <NA>            Bundesminis~
+##  3 11004427  Volker         Ullrich         CDU/CSU         <NA>        
+##  4 11001478  Angela         Merkel          <NA>            Bundeskanzl~
+##  5 11004809  Heiko          Maas            <NA>            Bundesminis~
+##  6 11004851  Frauke         Petry           fraktionslos    <NA>        
+##  7 11004798  Alexander Graf Lambsdorff      FDP             <NA>        
+##  8 11003625  Andreas        Scheuer         <NA>            Bundesminis~
+##  9 999990074 Svenja         Schulze         <NA>            Bundesminis~
+## 10 11003638  Jens           Spahn           <NA>            Bundesminis~
+## # ... with 763 more rows, and 1 more variable: reden <int>
+\end{verbatim}
+
+Die Minister\_innen haben am häuiigsten im Bundestag geredet, der MdB
+Volker Ullrich landet erst af Platz 4 mit insgesamt vierzig Reden in der
+aktuellen Wahlperiode. Überraschenderweise hat Frauke Petry sehr viele
+Reden gehalten: 35 Stück. Das sind deutlich mehr als in ihrer damaligen
+Zeit im Landesparlament.
 
 \hypertarget{literatur--und-quellverzeichnis}{%
 \chapter*{Literatur- und
@@ -634,6 +788,11 @@ Parliamentary Floor? The Role of Gender in Speech-Making in the Swedish
 R Core Team (2018): R: A Language and Environment for Statistical
 Computing. Vienna, Austria: R Foundation for Statistical Computing. Text
 abrufbar unter: \url{https://www.R-project.org/}.
+
+\leavevmode\hypertarget{ref-vaughan_2018}{}%
+Vaughan, Davis/Dancho, Matt (2018): Furrr: Apply Mapping Functions in
+Parallel Using Futures. Text abrufbar unter:
+\url{https://CRAN.R-project.org/package=furrr}.
 
 \leavevmode\hypertarget{ref-wangnerud_2000}{}%
 Wangnerud, Lena (2000): Testing the Politics of Presence: Women's
