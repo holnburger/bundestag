@@ -1,0 +1,159 @@
+# Datenerhebung Teil 1 {#data-01}
+
+Die Reden im Deutschen Bundestag sind in den Protokollen dokumentiert und lassen sich [online abrufen](https://www.bundestag.de/protokolle). Praktischerweise liegen die Daten seit der aktuellen Wahlerperiode auch im [TEI-Format (Text Encoding Initiative)](http://www.tei-c.org/) vor. Dies erleichtert die Analyse der Protkolle erheblich.
+Die Datenerhebung und Auswertung erfolgt mit der Programmiersprache R [@rcoreteam_2018] und der `tidyverse` Packetsammlung [@wickham_2017].
+
+Die Datenerhebung soll zunächst an einem Beispielprotokoll gezeigt werden -- wir nutzen hierfür das Protokoll der [61. Sitzung des 19. Bundestages](https://www.bundestag.de/blob/577958/b2d1fce9b7dec32a1403a2ec5f6bc58d/19061-data.xml). Das Protokoll liegt dabei sowohl als PDF, als TXT und auch als XML-Datei vor. Letzeres wird für diese Arbeit herangezogen.
+
+Mit dem Packet `xml2` [@wickham_2018] kann das Protokoll ausgelesen und anschließend in ein passendes Format umgewandelt werden. Mit der Funktion `read_html()` wird das vollständige Protokoll in der Variable `prot_file` eingelesen. Die Umwandlung der einzelnen Knoten und Attribute des XML-Dokuments erfolgt mit dem `rvest` Packet [@wickham_2016].
+
+Da für diese Auswertung nur die Reden im Deutschen Bundestag herangezogen werden (und angehängte Dokumente sowie Anwesenheitslisten irrelevant sind), soll nur ein Teil des Protkolls untersucht werden. Mittels der Funktion `xml_find_all("//rede")` können alle Einträge unter dem Knoten "rede" herausgefiltert werden.
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(xml2)
+library(rvest)
+
+prot_file <- read_html("https://www.bundestag.de/blob/577958/b2d1fce9b7dec32a1403a2ec5f6bc58d/19061-data.xml") 
+
+prot_overview <- prot_file %>%
+  xml_find_all("//rede")
+```
+
+Die Datei soll anschließend in einen *Dataframe* umgewandelt werden. Dies erleichtert die weitere Arbeit und im weiteren Verlauf können die Daten einfacher nach nach Geschlecht, Partei, Datum oder Wahlperiode gefiltert werden. Hierbei wird vor allem mit den Funktionen `xml_node()` und `xml_attr()` gearbeitet. Zum Verständnis bietet sich hier ein kleiner Diskurs an.
+
+## XML-Knoten und Attribute
+
+Nachdem die Datei eingelesen wurde, lohnt sich ein Blick auf die Rohdaten:
+
+```xml
+<rede id="ID196105400">
+  <p klasse="redner"><redner id="11004826"><name><vorname>Siemtje</vorname><nachname>Möller</nachname><fraktion>SPD</fraktion></name></redner>Siemtje Möller (SPD):</p>
+  <p klasse="J_1">Lieber Jürgen Trittin, Sie haben gerade eigentlich das wiederholt, was Sie schon in Ihrem Redebeitrag gesagt haben. Ich möchte dazu genau dasselbe sagen, was ich auch in der Debatte über Syrien und eine mögliche Beteiligung der Bundeswehr gesagt habe: Wir sind da noch nicht. Es gilt, alles zu tun, damit dieser Zustand nicht eintritt. Und genau das tut Heiko Maas.</p>
+  <kommentar>(Beifall bei der SPD)</kommentar>
+</rede>
+```
+
+```{r, include=FALSE}
+xml_example <- read_html('<rede id="ID196105400">
+  <p klasse="redner"><redner id="11004826"><name><vorname>Siemtje</vorname><nachname>Möller</nachname><fraktion>SPD</fraktion></name></redner>Siemtje Möller (SPD):</p>
+  <p klasse="J_1">Lieber Jürgen Trittin, Sie haben gerade eigentlich das wiederholt, was Sie schon in Ihrem Redebeitrag gesagt haben. Ich möchte dazu genau dasselbe sagen, was ich auch in der Debatte über Syrien und eine mögliche Beteiligung der Bundeswehr gesagt habe: Wir sind da noch nicht. Es gilt, alles zu tun, damit dieser Zustand nicht eintritt. Und genau das tut Heiko Maas.</p>
+  <kommentar>(Beifall bei der SPD)</kommentar>
+</rede>')
+```
+
+In diesem Beispiel wird das XML-Fragment in die Variable `xml_example` geladen und ausgewertet. Die Knoten eines XML-Documents werden durch `<>` und `</>` eingefasst. Beispielsweise können die Knoten mit den Namen "Kommentar" folgendermaßen extrahiert werden:
+
+```{r}
+xml_example %>% xml_nodes("kommentar")
+```
+
+Bei der Ausgabe fällt jedoch auf, dass die Datei weiterhin eine XML-Datei bleibt und die Knoteninformationen ebenfalls extrahiert werden. Mittels der Funktion `xml_text()` kann das Ergebniss in einen in einen Character-String umwandelt werden.
+
+```{r}
+xml_example %>% xml_nodes("kommentar") %>% xml_text()
+```
+
+Die Ergebnisse werden in einer Liste zusammengefasst und können beispielsweise in einem Datenframe umgewandelt werden. 
+
+Die Attribute eines Knotens finden sich in den Klammern nach dem Gleichheitszeichen: `<knotenname attribut="inhalt">...`. Die Werte eines Attributes (und auch den Attributnamen) können mit der Funktion `xml_attr()` extrahiert werden.
+
+```{r}
+xml_example %>% xml_node("rede") %>% xml_attr("id")
+```
+
+Mit dieser kurzen Exkursion können wir nun eine Funktion bauen, welche auf die für uns relevanten Daten aus dem XML-Dokument extrahiert und anschließend in einen Datenframe umwandelt.
+
+```{r}
+get_overview_df <- function(x){
+  rede_id <- x %>% xml_attr("id")
+  redner_id <- x %>% xml_node("redner") %>% xml_attr("id")
+  redner_vorname <- x %>% xml_node("redner") %>% xml_node("vorname") %>% xml_text()
+  redner_nachname <- x %>% xml_node("redner") %>% xml_node("nachname") %>% xml_text()
+  redner_fraktion <- x %>% xml_node("redner") %>% xml_node("fraktion") %>% xml_text()
+  redner_rolle <- x %>% xml_node("rolle_kurz") %>% xml_text()
+  
+  data_frame(rede_id, redner_id, redner_vorname, redner_nachname, redner_fraktion, redner_rolle)
+}
+```
+
+Wir können mit dieser Funktion nun die vorher eingelesen XML-Datei in einen Datenframe umwandeln und auswerten. 
+
+```{r}
+overview_df <- get_overview_df(prot_overview)
+
+overview_df
+```
+
+## Zwischenfazit
+
+Wir konnten  mit wenigen Zeilen Code das XML-Format in einen Datenframe umwandeln, welcher uns die weitere Arbeit erheblich erleichter. So könnten wir sehr schnell sagen, wie viele Reden es von den einzelnen Fraktionen zur 61. Sitzung des 19. Bundestags gab:
+
+```{r}
+overview_df %>% 
+  group_by(redner_fraktion) %>%
+  summarise(reden = n()) %>%
+  arrange(-reden)
+```
+
+Da *NA* Fraktionen sind dabei die Reden von Ministern und Gästen. Sie werden keiner Fraktion zugeordnet. Insgesamt gab es `r nrow(overview_df)` Reden an diesem Tag.
+
+Uns interessieren natürlich nun nicht nur die Anzahl der Reden, sondern auch deren Inhalt. Wir untersuchen hierfür alle Knoten eine Ebene unter den "rede"-Knoten. 
+
+```{r}
+prot_speeches <- prot_file %>%
+  xml_find_all("//rede/*")
+```
+
+Wir bauen wieder eine Funktion, um alle Inhalte der Reden zu extrahieren. Diese Funktion ist ein wenig komplexer, da sie unter anderem die Funktion `map()` aus dem `purrr` Packet nutzt (ebenfalls `tidyverse`) -- für weitere Informationen über die Funktion `map()` bietet sich dieses [Tutorial an](https://jennybc.github.io/purrr-tutorial/).
+
+Außerdem müssen die Rohdaten etwas angepasst werden, da die Aussagen des Präsidiums sonst falsch zugeordnet werden.
+
+```{r}
+get_speeches_df <- function(x){
+  raw <- x
+  rede <- x %>% xml_text()
+  id <- x %>% xml_node("redner") %>% xml_attr("id")
+  vorname <- x %>% xml_node("vorname") %>% xml_text()
+  nachname <- x %>% xml_node("nachname") %>% xml_text()
+  fraktion <- x %>% xml_node("fraktion") %>% xml_text()
+  rolle <- x %>% xml_node("rolle_kurz") %>% xml_text()
+  typ <- x %>% xml_name()
+  status <- x %>% xml_attr("klasse")
+  
+  data_frame(raw, rede, id, vorname, nachname, fraktion, rolle, typ, status) %>%
+    mutate(rede_id = map(raw, ~xml_parent(.) %>% xml_attr("id")) %>% as.character()) %>%
+    select(-raw) %>%
+    mutate(status = ifelse(typ == "kommentar", typ, status)) %>%
+    mutate(status = ifelse(typ == "name", "präsidium", status)) %>%
+    mutate(fraktion = case_when(
+      typ == "name"       ~ "präsidium",
+      !is.na(rolle)       ~ "andere",
+      TRUE                ~ fraktion)) %>%
+    fill(id, vorname, nachname, fraktion) %>%
+    mutate(präsidium = ifelse(fraktion == "präsidium", TRUE, FALSE)) %>%
+    mutate(fraktion = ifelse(fraktion == "präsidium", NA, fraktion)) %>%
+    filter(!status %in% c("T_NaS", "T_Beratung", "T_fett", "redner")) %>%
+    filter(!typ %in% c("a", "fussnote", "sup")) %>%
+    select(rede_id, rede, id, vorname, nachname, fraktion, präsidium, typ, status)
+}
+
+speeches_df <- get_speeches_df(prot_speeches)
+```
+
+Mittels dieses Datenframes ist es nun möglich, nur die Aussagen von beispielsweise Andrea Nahles zu untersuchen -- ohne Unterbrechungen und Fragen von anderen Abgeordneten "mitzuschneiden" oder Aussagen des Präsidiums mitzunehmen.
+
+Hier ein Beispiel:
+
+```{r, asis = TRUE}
+speeches_df %>%
+  filter(typ != "kommentar") %>%
+  filter(präsidium == FALSE) %>%
+  filter(id == "11003196") %>%
+  pull(rede) %>% 
+  cat(fill = TRUE)
+```
+
+Somit könnten wir für dieses Protokoll die einzelnen Reden (aber zum Beispiel auch Zwischenfragen) von Abgeordneten gezielt auf deren Inhalte untersuchen. Wir können noch nicht die Zwischenrufe und den Applaus nach Abgeordneten bzw. Fraktionen auswerten. Dies wäre mit sogenannten *regular experesions* aber möglich.
+
+Wie wir alle aktuellen Protokolle auswerten, behandeln wir in Daten wir in Kapitel \@ref(data-02). Die beiden Funktionen speichern wir im Ordner "functions".

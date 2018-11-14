@@ -1,0 +1,15 @@
+bookdown::gitbook:
+  css: style.css
+  pandoc_args: [ "--csl", "universitat-bremen-institut-fur-politikwissenschaft.csl" ]
+  config:
+bookdown::pdf_book:
+  includes:
+    in_header: ["preamble.tex", "_credentials.tex"]
+    before_body: _titlepage.tex
+  latex_engine: xelatex
+  citation_package: none
+  pandoc_args: [ "--csl", "universitat-bremen-institut-fur-politikwissenschaft.csl" ]
+  keep_tex: yes
+  template: null
+bookdown::epub_book: 
+  pandoc_args: [ "--csl", "universitat-bremen-institut-fur-politikwissenschaft.csl" ]

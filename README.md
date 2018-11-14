@@ -1,0 +1,3 @@
+Im Rahmen einer Hausarbeit des Forschungsseminars "Vergleichende und Regionalstudien" der Universität Hamburg werden die Reden des Bundestags auf mögliche Geschlechterunterschiede hin untersucht. Vermutet wird, dass (immer noch) Unterschiede sowohl bezüglich der Anzahl an Reden als auch Inhalte der Reden festgestellt werden können.
+
+Untersucht werden die Inhalte mittels *Topic Modeling*. Die Datenerhebung und Auswertung wird vollumfänglich dokumentiert und kommentiert.

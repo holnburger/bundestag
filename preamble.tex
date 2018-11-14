@@ -1,0 +1,29 @@
+\usepackage{booktabs}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+
+\setkomafont{disposition}{\normalcolor\bfseries}
+
+% Style - Seitennummern oben, Linie oben, keine Linien bei Kapiteln, Kapitel nicht abgesetzt
+\usepackage{scrlayer-scrpage}
+\automark{chapter}
+\automark*{section}
+\clearpairofpagestyles
+\ihead{\headmark}
+\ohead{\pagemark}
+\KOMAoptions{headsepline = true}
+
+% Wir machen die Chapterheads etwas kleiner, bzw. verringern den Abstand nach oben und unten.
+\renewcommand*\chapterheadstartvskip{\vspace*{-\topskip}}
+\renewcommand*\chapterheadendvskip{%
+  \vspace*{1\baselineskip plus .1\baselineskip minus .167\baselineskip}}
+
+% Mit folgendem Befehl wird keine Titleseite gesetzt, wir haben eine eigene
+\AtBeginDocument{\let\maketitle\relax}
+
+% Hintergrund für den Code
+\definecolor{lightgrey}{rgb}{0.90,0.90,0.90}
+
+\setlength{\textwidth}{16cm}        % Textbreite
+\setlength{\textheight}{24cm}       % Texthöhe
+\setlength{\topmargin}{-12mm}       % oberer Rand
