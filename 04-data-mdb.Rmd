@@ -1,4 +1,4 @@
-# Daten der Abgeordneten
+## Daten der Abgeordneten
 
 Wir haben nun die Reden als auch die Inhalte der Reden im Bundestag heruntergeladen. Dabei haben wir auch schon Verweise auf die Fraktionen und auch die Rollen (beispielsweise die Rede als Bundesminister_in) generieren können. Es fehlen uns jedoch noch Aussagen über das Geschlecht der Redner_innen (und weitere Daten -- etwa Alter, Ausschussmitgliedschaften und Amtszeit).
 
@@ -54,7 +54,7 @@ Die große Mehrheit der im Bundestag vertretenen Person ist männlich. Nur eine 
 
 Wir können mit diesen Daten auch mit wenig aufwand die Frauenquote in den jeweiligen Wahlperioden darstellen.
 
-```{r, fig.align="center", fig.cap = "Auswertung der Geschlechteranteile aller Deutscher Bundestage"}
+```{r gender-wp-bt, fig.align="center", fig.cap = "Auswertung der Geschlechteranteile aller Deutscher Bundestage"}
 data_mdb %>%
   unnest() %>%
   group_by(geschlecht, wahlperioden) %>%
@@ -71,4 +71,5 @@ data_mdb %>%
   theme_minimal()
 ```
 
-. 
+Wie in Abb. \@ref(fig:gender-wp-bt) zu erkennen, ist mit der aktuellen Wahlperiode der Anteil an Frauen im Bundestag deutlich zurückgegangen. Die Anteil an Frauen im aktuellen Bundestag beträgt aktuell 30,7 %. 
+

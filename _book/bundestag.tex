@@ -789,7 +789,7 @@ Wir können die Reden auch nach Fraktionen auswerten:
 
 \begin{table}
 
-\caption{\label{tab:unnamed-chunk-18}Reden Nach Fraktion im Deutschen Bundestag}
+\caption{\label{tab:unnamed-chunk-17}Reden Nach Fraktion im Deutschen Bundestag}
 \centering
 \begin{tabular}[t]{lr}
 \toprule
@@ -841,7 +841,7 @@ WIRD NOCH ERGÄNZT
 \end{Shaded}
 
 \hypertarget{daten-der-abgeordneten}{%
-\chapter{Daten der Abgeordneten}\label{daten-der-abgeordneten}}
+\section{Daten der Abgeordneten}\label{daten-der-abgeordneten}}
 
 Wir haben nun die Reden als auch die Inhalte der Reden im Bundestag
 heruntergeladen. Dabei haben wir auch schon Verweise auf die Fraktionen
@@ -938,7 +938,7 @@ auf eine bessere Darstellung in der PDF und der Webseite.
 
 \begin{table}
 
-\caption{\label{tab:unnamed-chunk-24}Bundestagsabgeordnete aller Wahlperioden nach Geschlecht}
+\caption{\label{tab:unnamed-chunk-23}Bundestagsabgeordnete aller Wahlperioden nach Geschlecht}
 \centering
 \begin{tabular}[t]{lrr}
 \toprule
@@ -983,14 +983,131 @@ den jeweiligen Wahlperioden darstellen.
 
 \begin{figure}
 
-{\centering \includegraphics{bundestag_files/figure-latex/unnamed-chunk-25-1} 
+{\centering \includegraphics{bundestag_files/figure-latex/gender-wp-bt-1} 
 
 }
 
-\caption{Auswertung der Geschlechteranteile aller Deutscher Bundestage}\label{fig:unnamed-chunk-25}
+\caption{Auswertung der Geschlechteranteile aller Deutscher Bundestage}\label{fig:gender-wp-bt}
 \end{figure}
 
-.
+Wie in Abb. \ref{fig:gender-wp-bt} zu erkennen, ist mit der aktuellen
+Wahlperiode der Anteil an Frauen im Bundestag deutlich zurückgegangen.
+Die Anteil an Frauen im aktuellen Bundestag beträgt aktuell 30,7 \%.
+
+\hypertarget{auswertung}{%
+\chapter{Auswertung}\label{auswertung}}
+
+Nachdem alle Daten abgerufen wurden, können wir uns endlich an die
+Auswertung machen. Zunächst, wie hoch ist der Frauenanteil nach den
+einzelnen Fraktionen?
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data_mdb }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{filter}\NormalTok{(wahlperioden }\OperatorTok{==}\StringTok{ }\DecValTok{19}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(geschlecht, partei) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{n =} \KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(partei) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{freq =}\NormalTok{ n}\OperatorTok{/}\KeywordTok{sum}\NormalTok{(n)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(geschlecht }\OperatorTok{==}\StringTok{ "weiblich"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{freq) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{freq =}\NormalTok{ scales}\OperatorTok{::}\KeywordTok{percent}\NormalTok{(freq)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{geschlecht)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 8 x 3
+## # Groups:   partei [8]
+##   partei                    n freq 
+##   <chr>                 <int> <chr>
+## 1 BÜNDNIS 90/DIE GRÜNEN    39 58.2%
+## 2 DIE LINKE.               37 53.6%
+## 3 Blaue                     1 50.0%
+## 4 SPD                      65 41.9%
+## 5 FDP                      19 23.7%
+## 6 CDU                      41 20.5%
+## 7 CSU                       8 17.4%
+## 8 AfD                      10 10.9%
+\end{verbatim}
+
+Wie hoch ist der Anteil an Reden von Frauen im Bundestag?
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data_mdb }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(wahlperioden }\OperatorTok{==}\StringTok{ }\DecValTok{19}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{geburtsjahr, }\OperatorTok{-}\NormalTok{anzahl_wahlperioden, }\OperatorTok{-}\NormalTok{wahlperioden) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(prot_overview, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"id"}\NormalTok{ =}\StringTok{ "redner_id"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(geschlecht) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{n =} \KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{freq =}\NormalTok{ n}\OperatorTok{/}\KeywordTok{sum}\NormalTok{(n)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{freq =}\NormalTok{ scales}\OperatorTok{::}\KeywordTok{percent}\NormalTok{(freq))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 2 x 3
+##   geschlecht     n freq 
+##   <chr>      <int> <chr>
+## 1 männlich    3894 68.8%
+## 2 weiblich    1765 31.2%
+\end{verbatim}
+
+Überraschenderweise höher als der Anteil an weiblichen Abgeordneten. Wie
+sieht es für die einzelnen Parteien an. Untersuchen wir den Anteil an
+Reden von Frauen.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data_mdb }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(wahlperioden }\OperatorTok{==}\StringTok{ }\DecValTok{19}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{geburtsjahr, }\OperatorTok{-}\NormalTok{anzahl_wahlperioden, }\OperatorTok{-}\NormalTok{wahlperioden) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(prot_overview, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"id"}\NormalTok{ =}\StringTok{ "redner_id"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(geschlecht, redner_fraktion) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{n =} \KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(redner_fraktion) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{freq =}\NormalTok{ n}\OperatorTok{/}\KeywordTok{sum}\NormalTok{(n)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(geschlecht }\OperatorTok{==}\StringTok{ "weiblich"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{freq) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{freq =}\NormalTok{ scales}\OperatorTok{::}\KeywordTok{percent}\NormalTok{(freq))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 8 x 4
+## # Groups:   redner_fraktion [8]
+##   geschlecht redner_fraktion           n freq 
+##   <chr>      <chr>                 <int> <chr>
+## 1 weiblich   BÜNDNIS 90/DIE GRÜNEN   407 61.4%
+## 2 weiblich   fraktionslos             35 55.6%
+## 3 weiblich   DIE LINKE               304 50.2%
+## 4 weiblich   SPD                     367 38.5%
+## 5 weiblich   <NA>                    202 36.4%
+## 6 weiblich   FDP                     167 24.5%
+## 7 weiblich   CDU/CSU                 202 14.9%
+## 8 weiblich   AfD                      81 10.3%
+\end{verbatim}
+
+Der Anteil an Reden von Frauen ist sowohl bei der SPD, der CDU/CSU, den
+Linken und auch der AfD niedriger als der Anteil an weiblichen
+Abgeordneten. Besonders deutlich fällt dies aber bei der Fraktion
+CDU/CSU aus. Bei der Fraktion der Grünen ist der Anteil an Reden von
+Frauen hingegen sogar noch höher als der Anteil an weiblichen
+Abgeordneten.
+
+Die keiner Fraktion zugeordneten Reden stammen vor allem von
+Regierungsmitgliedern. Nur bei Regierungsmitgliedern mit einem Mandat
+für den Bundestag kann ein Geschlecht zugeordnet werden -- der Anteil an
+Reden weiblicher Regierungsmitglieder fällt somit wohmöglich höher aus.
+
+Der überraschend hohe Anteil an Reden weiblicher Abgeordneter bei den
+Fraktionslosen abgeordneten geht auf Frauke Petry zurück, welche
+besonders häufig am Podium des Bundestags zu sehen ist -- siehe
+\ref{uberblick-der-reden}.
 
 \hypertarget{literatur--und-quellverzeichnis}{%
 \chapter*{Literatur- und

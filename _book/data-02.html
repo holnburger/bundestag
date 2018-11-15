@@ -32,7 +32,7 @@
   
   
 <link rel="prev" href="data-01.html">
-<link rel="next" href="daten-der-abgeordneten.html">
+<link rel="next" href="auswertung.html">
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
@@ -133,8 +133,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="3" data-path="data-02.html"><a href="data-02.html"><i class="fa fa-check"></i><b>3</b> Erhebung der Daten des 19. Bundestags</a><ul>
 <li class="chapter" data-level="3.1" data-path="data-02.html"><a href="data-02.html#uberblick-der-reden"><i class="fa fa-check"></i><b>3.1</b> Überblick der Reden</a></li>
 <li class="chapter" data-level="3.2" data-path="data-02.html"><a href="data-02.html#inhalte-der-reden"><i class="fa fa-check"></i><b>3.2</b> Inhalte der Reden</a></li>
+<li class="chapter" data-level="3.3" data-path="data-02.html"><a href="data-02.html#daten-der-abgeordneten"><i class="fa fa-check"></i><b>3.3</b> Daten der Abgeordneten</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="daten-der-abgeordneten.html"><a href="daten-der-abgeordneten.html"><i class="fa fa-check"></i><b>4</b> Daten der Abgeordneten</a></li>
+<li class="chapter" data-level="4" data-path="auswertung.html"><a href="auswertung.html"><i class="fa fa-check"></i><b>4</b> Auswertung</a></li>
 <li class="chapter" data-level="" data-path="literatur-und-quellverzeichnis.html"><a href="literatur-und-quellverzeichnis.html"><i class="fa fa-check"></i>Literatur- und Quellverzeichnis</a></li>
 </ul>
 
@@ -231,7 +232,7 @@ Durch das Auslesen der Netzwerkdaten nach einem Klick auf die nächsten fünf Pr
 <a class="sourceLine" id="cb25-4" data-line-number="4"><span class="st">  </span><span class="kw">arrange</span>(<span class="op">-</span>reden) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb25-5" data-line-number="5"><span class="st">  </span>knitr<span class="op">::</span><span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Reden Nach Fraktion im Deutschen Bundestag&quot;</span>, <span class="dt">booktabs =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
 <table>
-<caption><span id="tab:unnamed-chunk-18">Table 3.1: </span>Reden Nach Fraktion im Deutschen Bundestag</caption>
+<caption><span id="tab:unnamed-chunk-17">Tabelle 3.1: </span>Reden Nach Fraktion im Deutschen Bundestag</caption>
 <thead>
 <tr class="header">
 <th align="left">redner_fraktion</th>
@@ -297,6 +298,101 @@ Beide ändern wir entsprechend:</p>
 <a class="sourceLine" id="cb27-5" data-line-number="5">prot_speeches &lt;-<span class="st"> </span><span class="kw">map_dfr</span>(speech_extract, <span class="op">~</span><span class="kw">get_speeches_df</span>(.))</a></code></pre></div>
 
 </div>
+<div id="daten-der-abgeordneten" class="section level2">
+<h2><span class="header-section-number">3.3</span> Daten der Abgeordneten</h2>
+<p>Wir haben nun die Reden als auch die Inhalte der Reden im Bundestag heruntergeladen. Dabei haben wir auch schon Verweise auf die Fraktionen und auch die Rollen (beispielsweise die Rede als Bundesminister_in) generieren können. Es fehlen uns jedoch noch Aussagen über das Geschlecht der Redner_innen (und weitere Daten – etwa Alter, Ausschussmitgliedschaften und Amtszeit).</p>
+<p>Diese können wir abermals über das Open Data Portal<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> des Bundestags herunterladen. Es handelt sich um eine <code>ZIP</code>-Datei, welche wir zunächst herunterladen und anschließed extrahieren.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" data-line-number="1">link_zip &lt;-<span class="st"> &quot;https://www.bundestag.de/blob/472878/e207ab4b38c93187c6580fc186a95f38/mdb-stammdaten-data.zip&quot;</span></a>
+<a class="sourceLine" id="cb28-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb28-3" data-line-number="3"><span class="kw">download.file</span>(link_zip, <span class="kw">file.path</span>(<span class="st">&quot;data/&quot;</span>, <span class="kw">basename</span>(link_zip)))</a>
+<a class="sourceLine" id="cb28-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb28-5" data-line-number="5"><span class="kw">unzip</span>(<span class="st">&quot;data/mdb-stammdaten-data.zip&quot;</span>, <span class="dt">exdir =</span> <span class="st">&quot;data/&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" data-line-number="1">file_stammdaten &lt;-<span class="st"> </span><span class="kw">read_xml</span>(<span class="st">&quot;data/MDB_STAMMDATEN.XML&quot;</span>)</a></code></pre></div>
+<p>Nachdem die Datei heruntergeladen und ausgelesen wurde, können wir die Daten wieder einen <em>Dataframe</em> umwandeln.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" data-line-number="1">get_data_mdb &lt;-<span class="st"> </span><span class="cf">function</span>(x){</a>
+<a class="sourceLine" id="cb30-2" data-line-number="2">  id &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">xml_find_all</span>(<span class="st">&quot;//ID&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">xml_text</span>()</a>
+<a class="sourceLine" id="cb30-3" data-line-number="3">  geschlecht &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">xml_find_all</span>(<span class="st">&quot;//ID/following-sibling::BIOGRAFISCHE_ANGABEN/GESCHLECHT&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">xml_text</span>()</a>
+<a class="sourceLine" id="cb30-4" data-line-number="4">  geburtsjahr &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">xml_find_all</span>(<span class="st">&quot;//ID/following-sibling::BIOGRAFISCHE_ANGABEN/GEBURTSDATUM&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">xml_text</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.integer</span>()</a>
+<a class="sourceLine" id="cb30-5" data-line-number="5">  partei &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">xml_find_all</span>(<span class="st">&quot;//ID/following-sibling::BIOGRAFISCHE_ANGABEN/PARTEI_KURZ&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">xml_text</span>()</a>
+<a class="sourceLine" id="cb30-6" data-line-number="6">  wahlperioden &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">xml_find_all</span>(<span class="st">&quot;//ID/following-sibling::WAHLPERIODEN&quot;</span>)</a>
+<a class="sourceLine" id="cb30-7" data-line-number="7">  </a>
+<a class="sourceLine" id="cb30-8" data-line-number="8">  <span class="kw">data_frame</span>(id, geschlecht, geburtsjahr, partei, wahlperioden) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb30-9" data-line-number="9"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">wahlperioden =</span> <span class="kw">map</span>(wahlperioden, <span class="op">~</span><span class="kw">xml_nodes</span>(., <span class="st">&quot;WP&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">xml_text</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.integer</span>())) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb30-10" data-line-number="10"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">anzahl_wahlperioden =</span> <span class="kw">map</span>(wahlperioden, <span class="op">~</span><span class="kw">length</span>(.)) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">unlist</span>())</a>
+<a class="sourceLine" id="cb30-11" data-line-number="11">}</a>
+<a class="sourceLine" id="cb30-12" data-line-number="12"></a>
+<a class="sourceLine" id="cb30-13" data-line-number="13">data_mdb &lt;-<span class="st"> </span><span class="kw">get_data_mdb</span>(file_stammdaten)</a>
+<a class="sourceLine" id="cb30-14" data-line-number="14"></a>
+<a class="sourceLine" id="cb30-15" data-line-number="15">data_mdb</a></code></pre></div>
+<pre><code>## # A tibble: 4,073 x 6
+##    id       geschlecht geburtsjahr partei wahlperioden anzahl_wahlperioden
+##    &lt;chr&gt;    &lt;chr&gt;            &lt;int&gt; &lt;chr&gt;  &lt;list&gt;                     &lt;int&gt;
+##  1 11000001 männlich          1930 CDU    &lt;int [7]&gt;                      7
+##  2 11000002 männlich          1909 FDP    &lt;int [5]&gt;                      5
+##  3 11000003 weiblich          1913 CDU    &lt;int [3]&gt;                      3
+##  4 11000004 weiblich          1933 CDU    &lt;int [2]&gt;                      2
+##  5 11000005 männlich          1950 CDU    &lt;int [5]&gt;                      5
+##  6 11000007 männlich          1919 SPD    &lt;int [4]&gt;                      4
+##  7 11000008 männlich          1912 CDU    &lt;int [1]&gt;                      1
+##  8 11000009 männlich          1876 CDU    &lt;int [5]&gt;                      5
+##  9 11000010 weiblich          1944 SPD    &lt;int [4]&gt;                      4
+## 10 11000011 männlich          1920 CDU    &lt;int [3]&gt;                      3
+## # ... with 4,063 more rows</code></pre>
+<p>Die Namen brauchen wir nicht zwingend, da wir dies auch den bestehenden Daten entnehmen können (außerdem haben wir ein kleine Problem mit Abgeordneten, welche während oder zwischen den Wahlperioden den Nachnamen ändern oder ergänzen). Wichtig ist hier die ID – mit dieser können wir die einzelnen Reden den Abgeordneten und schließich auch dem jeweiligen Geschlecht zuordnen.</p>
+<p>Bei den Stammdaten handelt es sich um die Daten aller Bundestagsabgeordnetem seit dem 1. Bundestag, welcher 14. August 1949 gewählt wurde. Insgesamt waren 4.073 Personen im Bundestag vertreten. Wie viele davon weiblich und männlich waren, lässt sich wenigen Zeilen Code darstellen. Die letzten beiden Zeilen des Codes beziehen sich nur auf eine bessere Darstellung in der PDF und der Webseite.</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" data-line-number="1">data_mdb <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb32-2" data-line-number="2"><span class="st">  </span><span class="kw">group_by</span>(geschlecht) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb32-3" data-line-number="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">n =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb32-4" data-line-number="4"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">freq =</span> n <span class="op">/</span><span class="st"> </span><span class="kw">sum</span>(n)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb32-5" data-line-number="5"><span class="st">  </span><span class="kw">arrange</span>(<span class="op">-</span>n) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb32-6" data-line-number="6"><span class="st">  </span>knitr<span class="op">::</span><span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Bundestagsabgeordnete aller Wahlperioden nach Geschlecht&quot;</span>, <span class="dt">booktabs =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+<table>
+<caption><span id="tab:unnamed-chunk-23">Tabelle 3.2: </span>Bundestagsabgeordnete aller Wahlperioden nach Geschlecht</caption>
+<thead>
+<tr class="header">
+<th align="left">geschlecht</th>
+<th align="right">n</th>
+<th align="right">freq</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">männlich</td>
+<td align="right">3223</td>
+<td align="right">0.7913086</td>
+</tr>
+<tr class="even">
+<td align="left">weiblich</td>
+<td align="right">850</td>
+<td align="right">0.2086914</td>
+</tr>
+</tbody>
+</table>
+<p>Die große Mehrheit der im Bundestag vertretenen Person ist männlich. Nur eine Minderheit von 20,9% der Abgeordneten war oder ist weiblich. Ein nicht-binäres Geschlecht oder eine Verweigerung der Angabe des Geschlechts wurde bisher noch nicht angegeben oder nicht dokumentiert – trans- und intersexuelle Menschen sind im Bundestag somit auch weiterhin kaum vertreten.<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a></p>
+<p>Wir können mit diesen Daten auch mit wenig aufwand die Frauenquote in den jeweiligen Wahlperioden darstellen.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" data-line-number="1">data_mdb <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb33-2" data-line-number="2"><span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb33-3" data-line-number="3"><span class="st">  </span><span class="kw">group_by</span>(geschlecht, wahlperioden) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb33-4" data-line-number="4"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">n =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb33-5" data-line-number="5"><span class="st">  </span><span class="kw">group_by</span>(wahlperioden) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb33-6" data-line-number="6"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">freq =</span> n <span class="op">/</span><span class="st"> </span><span class="kw">sum</span>(n)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb33-7" data-line-number="7"><span class="st">  </span><span class="kw">rename</span>(<span class="dt">Geschlecht =</span> geschlecht) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb33-8" data-line-number="8"><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> wahlperioden, <span class="dt">y =</span> freq, <span class="dt">colour =</span> Geschlecht)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb33-9" data-line-number="9"><span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span></a>
+<a class="sourceLine" id="cb33-10" data-line-number="10"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Geschlechteranteile im Deutschen Bundestag&quot;</span>, </a>
+<a class="sourceLine" id="cb33-11" data-line-number="11">       <span class="dt">subtitle =</span> <span class="st">&quot;Auswertung des 1. bis 19. Deutschen Bundestages&quot;</span>,</a>
+<a class="sourceLine" id="cb33-12" data-line-number="12">       <span class="dt">x =</span> <span class="st">&quot;Wahlperiode&quot;</span>,</a>
+<a class="sourceLine" id="cb33-13" data-line-number="13">       <span class="dt">y =</span> <span class="st">&quot;Anteil in Prozent&quot;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb33-14" data-line-number="14"><span class="st">  </span><span class="kw">theme_minimal</span>()</a></code></pre></div>
+<div class="figure" style="text-align: center"><span id="fig:gender-wp-bt"></span>
+<img src="bundestag_files/figure-html/gender-wp-bt-1.svg" alt="Auswertung der Geschlechteranteile aller Deutscher Bundestage" width="672" />
+<p class="caption">
+Abbildung 3.1: Auswertung der Geschlechteranteile aller Deutscher Bundestage
+</p>
+</div>
+<p>Wie in Abb. <a href="data-02.html#fig:gender-wp-bt">3.1</a> zu erkennen, ist mit der aktuellen Wahlperiode der Anteil an Frauen im Bundestag deutlich zurückgegangen. Die Anteil an Frauen im aktuellen Bundestag beträgt aktuell 30,7 %.</p>
+
+</div>
 </div>
 <h3>Literatur- und Quellverzeichnis</h3>
 <div id="refs" class="references">
@@ -309,6 +405,8 @@ Beide ändern wir entsprechend:</p>
 <ol start="1">
 <li id="fn1"><p><a href="https://www.bundestag.de/service/opendata" class="uri">https://www.bundestag.de/service/opendata</a><a href="data-02.html#fnref1" class="footnote-back">↩</a></p></li>
 <li id="fn2"><p><a href="https://www.bundestag.de/ajax/filterlist/de/service/opendata/-/543410?offset=0" class="uri">https://www.bundestag.de/ajax/filterlist/de/service/opendata/-/543410?offset=0</a><a href="data-02.html#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p><a href="https://www.bundestag.de/service/opendata" class="uri">https://www.bundestag.de/service/opendata</a><a href="data-02.html#fnref3" class="footnote-back">↩</a></p></li>
+<li id="fn4"><p>Eine Ausnahme ist etwa der Politiker Christian Schenk, welcher sich nach seiner Zeit im Bundestag als Transmann outete und eine Geschlechtsumwandlung vollzog.<a href="data-02.html#fnref4" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
             </section>
@@ -317,7 +415,7 @@ Beide ändern wir entsprechend:</p>
         </div>
       </div>
 <a href="data-01.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="daten-der-abgeordneten.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="auswertung.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

@@ -4,11 +4,6 @@ Leider gibt es keine Möglichkeit, die XML-Protokolle des Deutschen Bundestages 
 Durch das Auslesen der Netzwerkdaten nach einem Klick auf die nächsten fünf Protkolle eine Webseite gefunden werden, auf welcher jeweils fünf Protkolle gespeichert sind^[https://www.bundestag.de/ajax/filterlist/de/service/opendata/-/543410?offset=0]. Durch setzen des `offset=0` auf `5, 10, 15, 20, …` können wir die weiteren Protokolle abrufen. 
 
 Mittels `rvest` und `xml2` ziehen wir uns zunächst die Nummer des letzten Bundestagsprotokolls. Über die Funktion `seq()` und `paste0()` können wir anschließend alle für den weiteren Verlauf notwendigen URLs erstellen.
-```{r, warning=FALSE,message=FALSE, include=FALSE}
-library(rvest)
-library(tidyverse)
-library(xml2)
-```
 
 ```{r, warning=FALSE}
 bt_website <- "https://www.bundestag.de/ajax/filterlist/de/service/opendata/-/543410"

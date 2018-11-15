@@ -1,5 +1,8 @@
 book_filename: "bundestag"
 delete_merged_file: true
 language:
+  label:
+    fig: 'Abbildung '
+    tab: 'Tabelle '
   ui:
     chapter_name: "Kapitel "

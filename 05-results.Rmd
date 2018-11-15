@@ -1,0 +1,55 @@
+# Auswertung
+
+Nachdem alle Daten abgerufen wurden, können wir uns endlich an die Auswertung machen. Zunächst, wie hoch ist der Frauenanteil nach den einzelnen Fraktionen?
+
+```{r frauenanteil}
+data_mdb %>%
+  unnest() %>% 
+  filter(wahlperioden == 19) %>%
+  group_by(geschlecht, partei) %>%
+  summarise(n = n()) %>%
+  group_by(partei) %>%
+  mutate(freq = n/sum(n)) %>%
+  filter(geschlecht == "weiblich") %>%
+  arrange(-freq) %>%
+  mutate(freq = scales::percent(freq)) %>%
+  select(-geschlecht)
+```
+
+Wie hoch ist der Anteil an Reden von Frauen im Bundestag?
+
+```{r anteil_reden}
+data_mdb %>%
+  unnest() %>%
+  filter(wahlperioden == 19) %>%
+  select(-geburtsjahr, -anzahl_wahlperioden, -wahlperioden) %>%
+  left_join(prot_overview, by = c("id" = "redner_id")) %>%
+  group_by(geschlecht) %>%
+  summarise(n = n()) %>%
+  mutate(freq = n/sum(n)) %>%
+  mutate(freq = scales::percent(freq))
+```
+
+Überraschenderweise höher als der Anteil an weiblichen Abgeordneten. Wie sieht es für die einzelnen Parteien an. Untersuchen wir den Anteil an Reden von Frauen.
+
+```{r}
+data_mdb %>%
+  unnest() %>%
+  filter(wahlperioden == 19) %>%
+  select(-geburtsjahr, -anzahl_wahlperioden, -wahlperioden) %>%
+  left_join(prot_overview, by = c("id" = "redner_id")) %>%
+  group_by(geschlecht, redner_fraktion) %>%
+  summarise(n = n()) %>%
+  group_by(redner_fraktion) %>%
+  mutate(freq = n/sum(n)) %>%
+  filter(geschlecht == "weiblich") %>%
+  arrange(-freq) %>%
+  mutate(freq = scales::percent(freq))
+```
+
+Der Anteil an Reden von Frauen ist sowohl bei der SPD, der CDU/CSU, den Linken und auch der AfD niedriger als der Anteil an weiblichen Abgeordneten. Besonders deutlich fällt dies aber bei der Fraktion CDU/CSU aus.
+Bei der Fraktion der Grünen ist der Anteil an Reden von Frauen hingegen sogar noch höher als der Anteil an weiblichen Abgeordneten. 
+
+Die keiner Fraktion zugeordneten Reden stammen vor allem von Regierungsmitgliedern. Nur bei Regierungsmitgliedern mit einem Mandat für den Bundestag kann ein Geschlecht zugeordnet werden -- der Anteil an Reden weiblicher Regierungsmitglieder fällt somit wohmöglich höher aus.
+
+Der überraschend hohe Anteil an Reden weiblicher Abgeordneter bei den Fraktionslosen abgeordneten geht auf Frauke Petry zurück, welche besonders häufig am Podium des Bundestags zu sehen ist -- siehe \@ref(uberblick-der-reden).
