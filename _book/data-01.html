@@ -126,13 +126,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <ul class="summary">
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Einleitung</a></li>
-<li class="chapter" data-level="2" data-path="data-01.html"><a href="data-01.html"><i class="fa fa-check"></i><b>2</b> Datenerhebung Teil 1</a><ul>
+<li class="chapter" data-level="2" data-path="data-01.html"><a href="data-01.html"><i class="fa fa-check"></i><b>2</b> Generelles zur Datenerhebung</a><ul>
 <li class="chapter" data-level="2.1" data-path="data-01.html"><a href="data-01.html#xml-knoten-und-attribute"><i class="fa fa-check"></i><b>2.1</b> XML-Knoten und Attribute</a></li>
 <li class="chapter" data-level="2.2" data-path="data-01.html"><a href="data-01.html#zwischenfazit"><i class="fa fa-check"></i><b>2.2</b> Zwischenfazit</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="data-02.html"><a href="data-02.html"><i class="fa fa-check"></i><b>3</b> Datenerhebung Teil 2</a><ul>
-<li class="chapter" data-level="3.1" data-path="data-02.html"><a href="data-02.html#zwischenfazit-1"><i class="fa fa-check"></i><b>3.1</b> Zwischenfazit</a></li>
+<li class="chapter" data-level="3" data-path="data-02.html"><a href="data-02.html"><i class="fa fa-check"></i><b>3</b> Erhebung der Daten des 19. Bundestags</a><ul>
+<li class="chapter" data-level="3.1" data-path="data-02.html"><a href="data-02.html#uberblick-der-reden"><i class="fa fa-check"></i><b>3.1</b> Überblick der Reden</a></li>
+<li class="chapter" data-level="3.2" data-path="data-02.html"><a href="data-02.html#inhalte-der-reden"><i class="fa fa-check"></i><b>3.2</b> Inhalte der Reden</a></li>
 </ul></li>
+<li class="chapter" data-level="4" data-path="daten-der-abgeordneten.html"><a href="daten-der-abgeordneten.html"><i class="fa fa-check"></i><b>4</b> Daten der Abgeordneten</a></li>
 <li class="chapter" data-level="" data-path="literatur-und-quellverzeichnis.html"><a href="literatur-und-quellverzeichnis.html"><i class="fa fa-check"></i>Literatur- und Quellverzeichnis</a></li>
 </ul>
 
@@ -152,7 +154,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
             <section class="normal" id="section-">
 <div id="data-01" class="section level1">
-<h1><span class="header-section-number">Kapitel 2</span> Datenerhebung Teil 1</h1>
+<h1><span class="header-section-number">Kapitel 2</span> Generelles zur Datenerhebung</h1>
 <p>Die Reden im Deutschen Bundestag sind in den Protokollen dokumentiert und lassen sich <a href="https://www.bundestag.de/protokolle">online abrufen</a>. Praktischerweise liegen die Daten seit der aktuellen Wahlerperiode auch im <a href="http://www.tei-c.org/">TEI-Format (Text Encoding Initiative)</a> vor. Dies erleichtert die Analyse der Protkolle erheblich.
 Die Datenerhebung und Auswertung erfolgt mit der Programmiersprache R <span class="citation">(R Core Team <a href="#ref-rcoreteam_2018">2018</a>)</span> und der <code>tidyverse</code> Packetsammlung <span class="citation">(Wickham <a href="#ref-wickham_2017">2017</a>)</span>.</p>
 <p>Die Datenerhebung soll zunächst an einem Beispielprotokoll gezeigt werden – wir nutzen hierfür das Protokoll der <a href="https://www.bundestag.de/blob/577958/b2d1fce9b7dec32a1403a2ec5f6bc58d/19061-data.xml">61. Sitzung des 19. Bundestages</a>. Das Protokoll liegt dabei sowohl als PDF, als TXT und auch als XML-Datei vor. Letzeres wird für diese Arbeit herangezogen.</p>

@@ -1,7 +1,7 @@
 \PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
 \PassOptionsToPackage{hyphens}{url}
 %
-\documentclass[oneside, 12pt]{scrbook}
+\documentclass[oneside, 12pt, numbers=endperiod]{scrbook}
 \usepackage{lmodern}
 \usepackage{setspace}
 \setstretch{1.5}
@@ -116,10 +116,10 @@
 % Style - Seitennummern oben, Linie oben, keine Linien bei Kapiteln, Kapitel nicht abgesetzt
 \usepackage{scrlayer-scrpage}
 \automark{chapter}
-\automark*{section}
+\automark{section}
 \clearpairofpagestyles
 \ihead{\headmark}
-\ohead{\pagemark}
+\ohead*{\pagemark}
 \KOMAoptions{headsepline = true}
 
 % Wir machen die Chapterheads etwas kleiner, bzw. verringern den Abstand nach oben und unten.
@@ -245,16 +245,27 @@
 \setcounter{tocdepth}{1}
 \tableofcontents
 }
+\frontmatter
+\pagenumbering{Roman}
+
+\listoffigures
+\addcontentsline{toc}{chapter}{\listfigurename}
+\vspace*{24pt}
+{\let\clearpage\relax \listoftables}    
+\addcontentsline{toc}{chapter}{\listtablename}
+
+\mainmatter
+
 \hypertarget{intro}{%
 \chapter{Einleitung}\label{intro}}
 
 Zusammen mit Gina-Gabriela Görner analysiere ich die Protokolle des
 Deutschen Bundestages auf mögliche Geschlechterunterschiede. Hierfür
 wollen wir die Anzahl aber auch Inhalte der Reden mehrer Wahlperioden
-des Bundestags untersuchen. Dieses Projekt wurde auch für die
-\href{https://www.kellogg.northwestern.edu/news-events/conference/ic2s2/2018.aspx}{4.
-International Conference on Computational Social Science} eingereicht
-und wir dürfen es dort mit einem Plakat vorstellen.
+des Bundestags untersuchen. Dieses Projekt wurde auch für das
+\href{http://symposium.computationalsocialscience.eu/2018/}{European
+Symposium Series on Societal Challenges} eingereicht und wir dürfen es
+dort mit einem Plakat vorstellen.
 
 Wir orientieren uns vor allem an der Forschung von Bäck et al.
 (\protect\hyperlink{ref-back_2014}{2014}), welche das schwedische
@@ -291,7 +302,7 @@ die Erhebung und Auswertung möglichst transparent und nachvollziehbar
 dargestellt werden.
 
 \hypertarget{data-01}{%
-\chapter{Datenerhebung Teil 1}\label{data-01}}
+\chapter{Generelles zur Datenerhebung}\label{data-01}}
 
 Die Reden im Deutschen Bundestag sind in den Protokollen dokumentiert
 und lassen sich \href{https://www.bundestag.de/protokolle}{online
@@ -618,7 +629,7 @@ in Kapitel \ref{data-02}. Die beiden Funktionen speichern wir im Ordner
 ``functions''.
 
 \hypertarget{data-02}{%
-\chapter{Datenerhebung Teil 2}\label{data-02}}
+\chapter{Erhebung der Daten des 19. Bundestags}\label{data-02}}
 
 Leider gibt es keine Möglichkeit, die XML-Protokolle des Deutschen
 Bundestages gesammelt herunterzuladen. Zwar finden sich auf \emph{Open
@@ -699,26 +710,17 @@ anschließend im Ordner \texttt{data\textbackslash{}protokolle}.
 
 \NormalTok{prot_links <-}\StringTok{ }\KeywordTok{future_map}\NormalTok{(prot_websites, }\OperatorTok{~}\KeywordTok{get_prot_links}\NormalTok{(.)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{unlist}\NormalTok{()}
 
-\NormalTok{prot_links }\OperatorTok{%>%}\StringTok{ }\KeywordTok{future_map}\NormalTok{(}\OperatorTok{~}\KeywordTok{download.file}\NormalTok{(., }\KeywordTok{file.path}\NormalTok{(}\StringTok{"data"}\NormalTok{, }\KeywordTok{basename}\NormalTok{(.))))}
+\NormalTok{prot_links }\OperatorTok{%>%}\StringTok{ }\KeywordTok{future_map}\NormalTok{(}\OperatorTok{~}\KeywordTok{download.file}\NormalTok{(., }\KeywordTok{file.path}\NormalTok{(}\StringTok{"data/protokolle"}\NormalTok{, }\KeywordTok{basename}\NormalTok{(.))))}
 \end{Highlighting}
 \end{Shaded}
 
 Wir waren erfolgreich und konnten in wenigsten Sekunden alle aktuellen
 Protokolle herunterladen. Wir können sie jetzt auslesen und dabei auch
-unsere bereits erstellten Funktionen verwenden. Jetzt können wir alle
-Dateien einlesen, die Übersicht der Reden oder den Inhalt der Reden
-extrahieren und anschließend auswerten.
+unsere bereits erstellten Funktionen verwenden.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\KeywordTok{source}\NormalTok{(}\StringTok{"functions/get_overview_df.R"}\NormalTok{)}
-\KeywordTok{source}\NormalTok{(}\StringTok{"functions/get_speeches_df.R"}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{prot_files <-}\StringTok{ }\KeywordTok{list.files}\NormalTok{(}\StringTok{"data"}\NormalTok{, }\DataTypeTok{full.names =} \OtherTok{TRUE}\NormalTok{)}
+\NormalTok{prot_files <-}\StringTok{ }\KeywordTok{list.files}\NormalTok{(}\StringTok{"data/protokolle"}\NormalTok{, }\DataTypeTok{full.names =} \OtherTok{TRUE}\NormalTok{)}
 
 \NormalTok{prot_extract <-}\StringTok{ }\KeywordTok{map}\NormalTok{(prot_files, }\OperatorTok{~}\KeywordTok{read_html}\NormalTok{(.) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_find_all}\NormalTok{(}\StringTok{"//rede"}\NormalTok{))}
 
@@ -728,8 +730,8 @@ extrahieren und anschließend auswerten.
 \end{Highlighting}
 \end{Shaded}
 
-\hypertarget{zwischenfazit-1}{%
-\section{Zwischenfazit}\label{zwischenfazit-1}}
+\hypertarget{uberblick-der-reden}{%
+\section{Überblick der Reden}\label{uberblick-der-reden}}
 
 Wir konnten nun alle Dateien herunterladen und anschließend alle
 Protkolle in R einlesen. Mit unserer Funktion
@@ -772,6 +774,223 @@ Volker Ullrich landet erst af Platz 4 mit insgesamt vierzig Reden in der
 aktuellen Wahlperiode. Überraschenderweise hat Frauke Petry sehr viele
 Reden gehalten: 35 Stück. Das sind deutlich mehr als in ihrer damaligen
 Zeit im Landesparlament.
+
+Wir können die Reden auch nach Fraktionen auswerten:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{prot_overview }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(redner_fraktion) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{reden =} \KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{reden) }\OperatorTok{%>%}
+\StringTok{  }\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{(}\DataTypeTok{caption =} \StringTok{"Reden Nach Fraktion im Deutschen Bundestag"}\NormalTok{, }\DataTypeTok{booktabs =} \OtherTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-18}Reden Nach Fraktion im Deutschen Bundestag}
+\centering
+\begin{tabular}[t]{lr}
+\toprule
+redner\_fraktion & reden\\
+\midrule
+CDU/CSU & 1353\\
+SPD & 962\\
+AfD & 784\\
+FDP & 683\\
+BÜNDNIS 90/DIE GRÜNEN & 662\\
+\addlinespace
+NA & 662\\
+DIE LINKE & 606\\
+fraktionslos & 63\\
+Bremen & 1\\
+Bündnis 90/Die Grünen & 1\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Mit auswertung der Daten nach Fraktion stellen wir kleinere Probleme
+Fest: Anscheinend wurden die Grüne in einem Dokument nicht in der
+üblichen Schreibweise geschrieben. Und die Fraktion ``Bremen'' ist
+vermutlich auch in der falschen Spalte gelandet - es handelt sich
+nämlich um eine Rede des Bremer Bürgermeisters. Beide ändern wir
+entsprechend:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{prot_overview <-}\StringTok{ }\NormalTok{prot_overview }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{redner_fraktion =} \KeywordTok{ifelse}\NormalTok{(redner_fraktion }\OperatorTok{==}\StringTok{ "Bündnis 90/Die Grünen", "}\NormalTok{BÜNDNIS }\DecValTok{90}\OperatorTok{/}\NormalTok{DIE GRÜNEN}\StringTok{", redner_fraktion)) %>%}
+\StringTok{  mutate(redner_fraktion = ifelse(redner_fraktion == "}\NormalTok{Bremen}\StringTok{", NA, redner_fraktion))}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{inhalte-der-reden}{%
+\section{Inhalte der Reden}\label{inhalte-der-reden}}
+
+WIRD NOCH ERGÄNZT
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{speech_extract <-}\StringTok{ }\KeywordTok{map}\NormalTok{(prot_files, }\OperatorTok{~}\KeywordTok{read_html}\NormalTok{(.) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_find_all}\NormalTok{(}\StringTok{"//rede/*"}\NormalTok{))}
+
+\KeywordTok{class}\NormalTok{(speech_extract) <-}\StringTok{ "xml_nodeset"}
+
+\NormalTok{prot_speeches <-}\StringTok{ }\KeywordTok{map_dfr}\NormalTok{(speech_extract, }\OperatorTok{~}\KeywordTok{get_speeches_df}\NormalTok{(.))}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{daten-der-abgeordneten}{%
+\chapter{Daten der Abgeordneten}\label{daten-der-abgeordneten}}
+
+Wir haben nun die Reden als auch die Inhalte der Reden im Bundestag
+heruntergeladen. Dabei haben wir auch schon Verweise auf die Fraktionen
+und auch die Rollen (beispielsweise die Rede als Bundesminister\_in)
+generieren können. Es fehlen uns jedoch noch Aussagen über das
+Geschlecht der Redner\_innen (und weitere Daten -- etwa Alter,
+Ausschussmitgliedschaften und Amtszeit).
+
+Diese können wir abermals über das Open Data Portal\footnote{\url{https://www.bundestag.de/service/opendata}}
+des Bundestags herunterladen. Es handelt sich um eine
+\texttt{ZIP}-Datei, welche wir zunächst herunterladen und anschließed
+extrahieren.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{link_zip <-}\StringTok{ "https://www.bundestag.de/blob/472878/e207ab4b38c93187c6580fc186a95f38/mdb-stammdaten-data.zip"}
+
+\KeywordTok{download.file}\NormalTok{(link_zip, }\KeywordTok{file.path}\NormalTok{(}\StringTok{"data/"}\NormalTok{, }\KeywordTok{basename}\NormalTok{(link_zip)))}
+
+\KeywordTok{unzip}\NormalTok{(}\StringTok{"data/mdb-stammdaten-data.zip"}\NormalTok{, }\DataTypeTok{exdir =} \StringTok{"data/"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{file_stammdaten <-}\StringTok{ }\KeywordTok{read_xml}\NormalTok{(}\StringTok{"data/MDB_STAMMDATEN.XML"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Nachdem die Datei heruntergeladen und ausgelesen wurde, können wir die
+Daten wieder einen \emph{Dataframe} umwandeln.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{get_data_mdb <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(x)\{}
+\NormalTok{  id <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_find_all}\NormalTok{(}\StringTok{"//ID"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_text}\NormalTok{()}
+\NormalTok{  geschlecht <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_find_all}\NormalTok{(}\StringTok{"//ID/following-sibling::BIOGRAFISCHE_ANGABEN/GESCHLECHT"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_text}\NormalTok{()}
+\NormalTok{  geburtsjahr <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_find_all}\NormalTok{(}\StringTok{"//ID/following-sibling::BIOGRAFISCHE_ANGABEN/GEBURTSDATUM"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_text}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{as.integer}\NormalTok{()}
+\NormalTok{  partei <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_find_all}\NormalTok{(}\StringTok{"//ID/following-sibling::BIOGRAFISCHE_ANGABEN/PARTEI_KURZ"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_text}\NormalTok{()}
+\NormalTok{  wahlperioden <-}\StringTok{ }\NormalTok{x }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_find_all}\NormalTok{(}\StringTok{"//ID/following-sibling::WAHLPERIODEN"}\NormalTok{)}
+  
+  \KeywordTok{data_frame}\NormalTok{(id, geschlecht, geburtsjahr, partei, wahlperioden) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{wahlperioden =} \KeywordTok{map}\NormalTok{(wahlperioden, }\OperatorTok{~}\KeywordTok{xml_nodes}\NormalTok{(., }\StringTok{"WP"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{xml_text}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{as.integer}\NormalTok{())) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{anzahl_wahlperioden =} \KeywordTok{map}\NormalTok{(wahlperioden, }\OperatorTok{~}\KeywordTok{length}\NormalTok{(.)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{unlist}\NormalTok{())}
+\NormalTok{\}}
+
+\NormalTok{data_mdb <-}\StringTok{ }\KeywordTok{get_data_mdb}\NormalTok{(file_stammdaten)}
+
+\NormalTok{data_mdb}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 4,073 x 6
+##    id       geschlecht geburtsjahr partei wahlperioden anzahl_wahlperioden
+##    <chr>    <chr>            <int> <chr>  <list>                     <int>
+##  1 11000001 männlich          1930 CDU    <int [7]>                      7
+##  2 11000002 männlich          1909 FDP    <int [5]>                      5
+##  3 11000003 weiblich          1913 CDU    <int [3]>                      3
+##  4 11000004 weiblich          1933 CDU    <int [2]>                      2
+##  5 11000005 männlich          1950 CDU    <int [5]>                      5
+##  6 11000007 männlich          1919 SPD    <int [4]>                      4
+##  7 11000008 männlich          1912 CDU    <int [1]>                      1
+##  8 11000009 männlich          1876 CDU    <int [5]>                      5
+##  9 11000010 weiblich          1944 SPD    <int [4]>                      4
+## 10 11000011 männlich          1920 CDU    <int [3]>                      3
+## # ... with 4,063 more rows
+\end{verbatim}
+
+Die Namen brauchen wir nicht zwingend, da wir dies auch den bestehenden
+Daten entnehmen können (außerdem haben wir ein kleine Problem mit
+Abgeordneten, welche während oder zwischen den Wahlperioden den
+Nachnamen ändern oder ergänzen). Wichtig ist hier die ID -- mit dieser
+können wir die einzelnen Reden den Abgeordneten und schließich auch dem
+jeweiligen Geschlecht zuordnen.
+
+Bei den Stammdaten handelt es sich um die Daten aller
+Bundestagsabgeordnetem seit dem 1. Bundestag, welcher 14. August 1949
+gewählt wurde. Insgesamt waren 4.073 Personen im Bundestag vertreten.
+Wie viele davon weiblich und männlich waren, lässt sich wenigen Zeilen
+Code darstellen. Die letzten beiden Zeilen des Codes beziehen sich nur
+auf eine bessere Darstellung in der PDF und der Webseite.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data_mdb }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(geschlecht) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{n =} \KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{freq =}\NormalTok{ n }\OperatorTok{/}\StringTok{ }\KeywordTok{sum}\NormalTok{(n)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{n) }\OperatorTok{%>%}
+\StringTok{  }\NormalTok{knitr}\OperatorTok{::}\KeywordTok{kable}\NormalTok{(}\DataTypeTok{caption =} \StringTok{"Bundestagsabgeordnete aller Wahlperioden nach Geschlecht"}\NormalTok{, }\DataTypeTok{booktabs =} \OtherTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-24}Bundestagsabgeordnete aller Wahlperioden nach Geschlecht}
+\centering
+\begin{tabular}[t]{lrr}
+\toprule
+geschlecht & n & freq\\
+\midrule
+männlich & 3223 & 0.7913086\\
+weiblich & 850 & 0.2086914\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Die große Mehrheit der im Bundestag vertretenen Person ist männlich. Nur
+eine Minderheit von 20,9\% der Abgeordneten war oder ist weiblich. Ein
+nicht-binäres Geschlecht oder eine Verweigerung der Angabe des
+Geschlechts wurde bisher noch nicht angegeben oder nicht dokumentiert --
+trans- und intersexuelle Menschen sind im Bundestag somit auch weiterhin
+kaum vertreten.\footnote{Eine Ausnahme ist etwa der Politiker Christian
+  Schenk, welcher sich nach seiner Zeit im Bundestag als Transmann
+  outete und eine Geschlechtsumwandlung vollzog.}
+
+Wir können mit diesen Daten auch mit wenig aufwand die Frauenquote in
+den jeweiligen Wahlperioden darstellen.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data_mdb }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(geschlecht, wahlperioden) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{n =} \KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(wahlperioden) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{freq =}\NormalTok{ n }\OperatorTok{/}\StringTok{ }\KeywordTok{sum}\NormalTok{(n)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{rename}\NormalTok{(}\DataTypeTok{Geschlecht =}\NormalTok{ geschlecht) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ wahlperioden, }\DataTypeTok{y =}\NormalTok{ freq, }\DataTypeTok{colour =}\NormalTok{ Geschlecht)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =} \StringTok{"Geschlechteranteile im Deutschen Bundestag"}\NormalTok{, }
+       \DataTypeTok{subtitle =} \StringTok{"Auswertung des 1. bis 19. Deutschen Bundestages"}\NormalTok{,}
+       \DataTypeTok{x =} \StringTok{"Wahlperiode"}\NormalTok{,}
+       \DataTypeTok{y =} \StringTok{"Anteil in Prozent"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme_minimal}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}
+
+{\centering \includegraphics{bundestag_files/figure-latex/unnamed-chunk-25-1} 
+
+}
+
+\caption{Auswertung der Geschlechteranteile aller Deutscher Bundestage}\label{fig:unnamed-chunk-25}
+\end{figure}
+
+.
 
 \hypertarget{literatur--und-quellverzeichnis}{%
 \chapter*{Literatur- und

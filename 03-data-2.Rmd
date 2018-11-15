@@ -1,4 +1,4 @@
-# Datenerhebung Teil 2 {#data-02}
+# Erhebung der Daten des 19. Bundestags {#data-02}
 
 Leider gibt es keine Möglichkeit, die XML-Protokolle des Deutschen Bundestages gesammelt herunterzuladen. Zwar finden sich auf *Open Data*-Seite des Bundestags^[https://www.bundestag.de/service/opendata] die Verweise auf die Bundestagsprotkolle, allerdings können diese nur umständlich einezln heruntergeladen werden.
 Durch das Auslesen der Netzwerkdaten nach einem Klick auf die nächsten fünf Protkolle eine Webseite gefunden werden, auf welcher jeweils fünf Protkolle gespeichert sind^[https://www.bundestag.de/ajax/filterlist/de/service/opendata/-/543410?offset=0]. Durch setzen des `offset=0` auf `5, 10, 15, 20, …` können wir die weiteren Protokolle abrufen. 
@@ -10,7 +10,7 @@ library(tidyverse)
 library(xml2)
 ```
 
-```{r}
+```{r, warning=FALSE}
 bt_website <- "https://www.bundestag.de/ajax/filterlist/de/service/opendata/-/543410"
 
 last_protocol <- bt_website %>% 
@@ -48,18 +48,13 @@ plan(multiprocess)
 
 prot_links <- future_map(prot_websites, ~get_prot_links(.)) %>% unlist()
 
-prot_links %>% future_map(~download.file(., file.path("data", basename(.))))
+prot_links %>% future_map(~download.file(., file.path("data/protokolle", basename(.))))
 ```
 
-Wir waren erfolgreich und konnten in wenigsten Sekunden alle aktuellen Protokolle herunterladen. Wir können sie jetzt auslesen und dabei auch unsere bereits erstellten Funktionen verwenden. Jetzt können wir alle Dateien einlesen, die Übersicht der Reden oder den Inhalt der Reden extrahieren und anschließend auswerten.
-
-```{r}
-source("functions/get_overview_df.R")
-source("functions/get_speeches_df.R")
-```
+Wir waren erfolgreich und konnten in wenigsten Sekunden alle aktuellen Protokolle herunterladen. Wir können sie jetzt auslesen und dabei auch unsere bereits erstellten Funktionen verwenden.
 
 ```{r, cache=TRUE}
-prot_files <- list.files("data", full.names = TRUE)
+prot_files <- list.files("data/protokolle", full.names = TRUE)
 
 prot_extract <- map(prot_files, ~read_html(.) %>% xml_find_all("//rede"))
 
@@ -68,7 +63,7 @@ class(prot_extract) <- "xml_nodeset"
 prot_overview <- map_dfr(prot_extract, ~get_overview_df(.))
 ```
 
-## Zwischenfazit
+## Überblick der Reden
 
 Wir konnten nun alle Dateien herunterladen und anschließend alle Protkolle in R einlesen. Mit unserer Funktion `get_overview_df()` konnten wir alle Protokolle in einen für uns passenden Datenframe umwandeln. Insgesamt können wir derzeit 5.777 Reden des aktuellen Bundestags untersuchen -- etwa nach der Person, welche die meisten reden gehalten hat.
 
@@ -81,3 +76,34 @@ prot_overview %>%
 ```
 
 Die Minister_innen haben am häuiigsten im Bundestag geredet, der MdB Volker Ullrich landet erst af Platz 4 mit insgesamt vierzig Reden in der aktuellen Wahlperiode. Überraschenderweise hat Frauke Petry sehr viele Reden gehalten: 35 Stück. Das sind deutlich mehr als in ihrer damaligen Zeit im Landesparlament.
+
+Wir können die Reden auch nach Fraktionen auswerten:
+
+```{r}
+prot_overview %>%
+  group_by(redner_fraktion) %>%
+  summarise(reden = n()) %>%
+  arrange(-reden) %>%
+  knitr::kable(caption = "Reden Nach Fraktion im Deutschen Bundestag", booktabs = TRUE)
+```
+
+Mit auswertung der Daten nach Fraktion stellen wir kleinere Probleme Fest: Anscheinend wurden die Grüne in einem Dokument nicht in der üblichen Schreibweise geschrieben. Und die Fraktion "Bremen" ist vermutlich auch in der falschen Spalte gelandet - es handelt sich nämlich um eine Rede des Bremer Bürgermeisters.
+Beide ändern wir entsprechend:
+
+```{r}
+prot_overview <- prot_overview %>%
+  mutate(redner_fraktion = ifelse(redner_fraktion == "Bündnis 90/Die Grünen", "BÜNDNIS 90/DIE GRÜNEN", redner_fraktion)) %>%
+  mutate(redner_fraktion = ifelse(redner_fraktion == "Bremen", NA, redner_fraktion))
+```
+
+## Inhalte der Reden
+
+WIRD NOCH ERGÄNZT
+
+```{r}
+speech_extract <- map(prot_files, ~read_html(.) %>% xml_find_all("//rede/*"))
+
+class(speech_extract) <- "xml_nodeset"
+
+prot_speeches <- map_dfr(speech_extract, ~get_speeches_df(.))
+```

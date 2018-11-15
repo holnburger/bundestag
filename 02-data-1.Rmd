@@ -1,4 +1,4 @@
-# Datenerhebung Teil 1 {#data-01}
+# Generelles zur Datenerhebung {#data-01}
 
 Die Reden im Deutschen Bundestag sind in den Protokollen dokumentiert und lassen sich [online abrufen](https://www.bundestag.de/protokolle). Praktischerweise liegen die Daten seit der aktuellen Wahlerperiode auch im [TEI-Format (Text Encoding Initiative)](http://www.tei-c.org/) vor. Dies erleichtert die Analyse der Protkolle erheblich.
 Die Datenerhebung und Auswertung erfolgt mit der Programmiersprache R [@rcoreteam_2018] und der `tidyverse` Packetsammlung [@wickham_2017].
@@ -9,7 +9,7 @@ Mit dem Packet `xml2` [@wickham_2018] kann das Protokoll ausgelesen und anschlie
 
 Da für diese Auswertung nur die Reden im Deutschen Bundestag herangezogen werden (und angehängte Dokumente sowie Anwesenheitslisten irrelevant sind), soll nur ein Teil des Protkolls untersucht werden. Mittels der Funktion `xml_find_all("//rede")` können alle Einträge unter dem Knoten "rede" herausgefiltert werden.
 
-```{r setup, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(xml2)
 library(rvest)
@@ -171,3 +171,4 @@ speeches_df %>%
 Somit könnten wir für dieses Protokoll die einzelnen Reden (aber zum Beispiel auch Zwischenfragen) von Abgeordneten gezielt auf deren Inhalte untersuchen. Wir können noch nicht die Zwischenrufe und den Applaus nach Abgeordneten bzw. Fraktionen auswerten. Dies wäre mit sogenannten *regular experesions* aber möglich.
 
 Wie wir alle aktuellen Protokolle auswerten, behandeln wir in Daten wir in Kapitel \@ref(data-02). Die beiden Funktionen speichern wir im Ordner "functions".
+
