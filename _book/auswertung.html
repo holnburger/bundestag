@@ -32,7 +32,7 @@
   
   
 <link rel="prev" href="data-02.html">
-<link rel="next" href="literatur-und-quellverzeichnis.html">
+<link rel="next" href="topic-modeling.html">
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
@@ -135,7 +135,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="3.2" data-path="data-02.html"><a href="data-02.html#inhalte-der-reden"><i class="fa fa-check"></i><b>3.2</b> Inhalte der Reden</a></li>
 <li class="chapter" data-level="3.3" data-path="data-02.html"><a href="data-02.html#daten-der-abgeordneten"><i class="fa fa-check"></i><b>3.3</b> Daten der Abgeordneten</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="auswertung.html"><a href="auswertung.html"><i class="fa fa-check"></i><b>4</b> Auswertung</a></li>
+<li class="chapter" data-level="4" data-path="auswertung.html"><a href="auswertung.html"><i class="fa fa-check"></i><b>4</b> Auswertung</a><ul>
+<li class="chapter" data-level="4.1" data-path="auswertung.html"><a href="auswertung.html#lange-der-reden"><i class="fa fa-check"></i><b>4.1</b> Länge der Reden</a></li>
+<li class="chapter" data-level="4.2" data-path="auswertung.html"><a href="auswertung.html#inhalte-der-reden-1"><i class="fa fa-check"></i><b>4.2</b> Inhalte der Reden</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="topic-modeling.html"><a href="topic-modeling.html"><i class="fa fa-check"></i><b>5</b> Topic Modeling</a></li>
 <li class="chapter" data-level="" data-path="literatur-und-quellverzeichnis.html"><a href="literatur-und-quellverzeichnis.html"><i class="fa fa-check"></i>Literatur- und Quellverzeichnis</a></li>
 </ul>
 
@@ -224,7 +228,140 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 Bei der Fraktion der Grünen ist der Anteil an Reden von Frauen hingegen sogar noch höher als der Anteil an weiblichen Abgeordneten.</p>
 <p>Die keiner Fraktion zugeordneten Reden stammen vor allem von Regierungsmitgliedern. Nur bei Regierungsmitgliedern mit einem Mandat für den Bundestag kann ein Geschlecht zugeordnet werden – der Anteil an Reden weiblicher Regierungsmitglieder fällt somit wohmöglich höher aus.</p>
 <p>Der überraschend hohe Anteil an Reden weiblicher Abgeordneter bei den Fraktionslosen abgeordneten geht auf Frauke Petry zurück, welche besonders häufig am Podium des Bundestags zu sehen ist – siehe <a href="data-02.html#uberblick-der-reden">3.1</a>.</p>
-
+<div id="lange-der-reden" class="section level2">
+<h2><span class="header-section-number">4.1</span> Länge der Reden</h2>
+<p>Wir können nun auch die Reden der Politiker_innen anaysieren. Etwa, indem wir die durchschnittliche Länge (in Zeichen) zwischen Männern und frauen vergleichen.</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" data-line-number="1">avg_rede_leange &lt;-<span class="st"> </span>data_mdb <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-2" data-line-number="2"><span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-3" data-line-number="3"><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>geburtsjahr, <span class="op">-</span>anzahl_wahlperioden) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-4" data-line-number="4"><span class="st">  </span><span class="kw">filter</span>(wahlperioden <span class="op">==</span><span class="st"> </span><span class="dv">19</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-5" data-line-number="5"><span class="st">  </span><span class="kw">left_join</span>(prot_overview, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;id&quot;</span> =<span class="st"> &quot;redner_id&quot;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-6" data-line-number="6"><span class="st">  </span><span class="kw">left_join</span>(prot_speeches, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;rede_id&quot;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-7" data-line-number="7"><span class="st">  </span><span class="kw">filter</span>(präsidium <span class="op">==</span><span class="st"> </span><span class="ot">FALSE</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-8" data-line-number="8"><span class="st">  </span><span class="kw">filter</span>(typ <span class="op">!=</span><span class="st"> &quot;kommentar&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-9" data-line-number="9"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(redner_fraktion)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-10" data-line-number="10"><span class="st">  </span><span class="kw">filter</span>(id.x <span class="op">==</span><span class="st"> </span>id.y) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-11" data-line-number="11"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">rede_laenge =</span> <span class="kw">nchar</span>(rede)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-12" data-line-number="12"><span class="st">  </span><span class="kw">group_by</span>(geschlecht, rede_id) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-13" data-line-number="13"><span class="st">  </span><span class="kw">rename</span>(<span class="dt">Geschlecht =</span> geschlecht) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb40-14" data-line-number="14"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">rede_laenge =</span> <span class="kw">sum</span>(rede_laenge)) </a>
+<a class="sourceLine" id="cb40-15" data-line-number="15"></a>
+<a class="sourceLine" id="cb40-16" data-line-number="16"><span class="kw">ggplot</span>(avg_rede_leange, <span class="kw">aes</span>(<span class="dt">x =</span> Geschlecht, <span class="dt">y =</span> rede_laenge, <span class="dt">fill =</span> Geschlecht)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb40-17" data-line-number="17"><span class="st">  </span><span class="kw">geom_boxplot</span>() <span class="op">+</span></a>
+<a class="sourceLine" id="cb40-18" data-line-number="18"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Länge der Reden in Zeichen nach Geschlecht der Abgeordneten&quot;</span>,</a>
+<a class="sourceLine" id="cb40-19" data-line-number="19">       <span class="dt">x =</span> <span class="st">&quot;Geschlecht&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Länge der Rede in Zeichen&quot;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb40-20" data-line-number="20"><span class="st">  </span><span class="kw">guides</span>(<span class="dt">fill =</span> <span class="ot">FALSE</span>) </a></code></pre></div>
+<p><img src="bundestag_files/figure-html/rede_laenge-1.svg" width="672" style="display: block; margin: auto;" /></p>
+<p>Wir sehen, dass Frauen durchscnittlich eine etwas geringere Redezeit aufweisen als Männer. Die tatsächliche Redezeit konnte allerdings nicht bestimmt werden, wir nähern uns durch die Anzahl der Zeichen in der Rede an einen solchen Wert an.
+Die Abweichung zwischen den Redezeiten erscheint jedoch marginal. Hier könnte noch zwischen den Fraktionen unterschieden werden. Wir vergleichen die Redezeiten von Frauen nach Fraktion:</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" data-line-number="1">data_mdb <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-2" data-line-number="2"><span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-3" data-line-number="3"><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>geburtsjahr, <span class="op">-</span>anzahl_wahlperioden) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-4" data-line-number="4"><span class="st">  </span><span class="kw">filter</span>(wahlperioden <span class="op">==</span><span class="st"> </span><span class="dv">19</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-5" data-line-number="5"><span class="st">  </span><span class="kw">left_join</span>(prot_overview, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;id&quot;</span> =<span class="st"> &quot;redner_id&quot;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-6" data-line-number="6"><span class="st">  </span><span class="kw">left_join</span>(prot_speeches, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;rede_id&quot;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-7" data-line-number="7"><span class="st">  </span><span class="kw">filter</span>(präsidium <span class="op">==</span><span class="st"> </span><span class="ot">FALSE</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-8" data-line-number="8"><span class="st">  </span><span class="kw">filter</span>(typ <span class="op">!=</span><span class="st"> &quot;kommentar&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-9" data-line-number="9"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(redner_fraktion)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-10" data-line-number="10"><span class="st">  </span><span class="kw">filter</span>(redner_fraktion <span class="op">!=</span><span class="st"> &quot;fraktionslos&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-11" data-line-number="11"><span class="st">  </span><span class="kw">filter</span>(id.x <span class="op">==</span><span class="st"> </span>id.y) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-12" data-line-number="12"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">rede_laenge =</span> <span class="kw">nchar</span>(rede)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-13" data-line-number="13"><span class="st">  </span><span class="kw">group_by</span>(geschlecht, rede_id, redner_fraktion) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-14" data-line-number="14"><span class="st">  </span><span class="kw">rename</span>(<span class="dt">Geschlecht =</span> geschlecht, <span class="dt">Fraktion =</span> redner_fraktion) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-15" data-line-number="15"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">rede_laenge =</span> <span class="kw">sum</span>(rede_laenge)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb41-16" data-line-number="16"><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> Fraktion, <span class="dt">y =</span> rede_laenge, <span class="dt">fill =</span> Fraktion)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb41-17" data-line-number="17"><span class="st">  </span><span class="kw">geom_boxplot</span>() <span class="op">+</span></a>
+<a class="sourceLine" id="cb41-18" data-line-number="18"><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>Geschlecht) <span class="op">+</span></a>
+<a class="sourceLine" id="cb41-19" data-line-number="19"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Länge der Rede in Zeichen nach Fraktion und Geschlecht&quot;</span>,</a>
+<a class="sourceLine" id="cb41-20" data-line-number="20">       <span class="dt">y =</span> <span class="st">&quot;Länge der Rede in Zeichen&quot;</span>, <span class="dt">x =</span> <span class="st">&quot;&quot;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb41-21" data-line-number="21"><span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span></a>
+<a class="sourceLine" id="cb41-22" data-line-number="22"><span class="st">  </span><span class="kw">guides</span>(<span class="dt">fill =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
+<p><img src="bundestag_files/figure-html/unnamed-chunk-27-1.svg" width="672" /></p>
+<p>Hier sind kaum Unterschiede zwischen den verschiedenen Fraktionen festzustellen. (DIE FARBEN WERDEN NOCH AN DIE FRAKTIONEN ANGEPASST). Als nächstes stehen die Inhalte der Reden an.</p>
+</div>
+<div id="inhalte-der-reden-1" class="section level2">
+<h2><span class="header-section-number">4.2</span> Inhalte der Reden</h2>
+<p>Wenn wir nach besonders häufigen Wörtern suchen würden, würden wir nur auf Stopwörter stoßen (der, die, das, ich, bin, …). Das wäre wenig gewinnbringend. Wir suchen deshalb nach Wörtern, welche häufiger vorkommen, aber nicht zu häufig – und sich zwischen den Gruppen besonders unterscheiden. Wir greifen hierbei auf die <em>Term Frequency and Inverse Document Frequency</em> (tf-idf) Berechnung <span class="citation">(Ramos <a href="#ref-ramos_2003">2003</a>)</span>.
+HIER KOMMT NOCH DIE ERKLÄRUNG VON TF-IDF UND WIESO ES BEI ZWEI GRUPPEN (BZW. DOKUMENTEN) EHER NICHT GEEIGNET IST.</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" data-line-number="1"><span class="kw">library</span>(tidytext)</a>
+<a class="sourceLine" id="cb42-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb42-3" data-line-number="3">speech_gender_words &lt;-<span class="st"> </span>data_mdb <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-4" data-line-number="4"><span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-5" data-line-number="5"><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>geburtsjahr, <span class="op">-</span>anzahl_wahlperioden) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-6" data-line-number="6"><span class="st">  </span><span class="kw">filter</span>(wahlperioden <span class="op">==</span><span class="st"> </span><span class="dv">19</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-7" data-line-number="7"><span class="st">  </span><span class="kw">left_join</span>(prot_overview, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;id&quot;</span> =<span class="st"> &quot;redner_id&quot;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-8" data-line-number="8"><span class="st">  </span><span class="kw">left_join</span>(prot_speeches, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;rede_id&quot;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-9" data-line-number="9"><span class="st">  </span><span class="kw">filter</span>(präsidium <span class="op">==</span><span class="st"> </span><span class="ot">FALSE</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-10" data-line-number="10"><span class="st">  </span><span class="kw">filter</span>(typ <span class="op">!=</span><span class="st"> &quot;kommentar&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-11" data-line-number="11"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(redner_fraktion)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-12" data-line-number="12"><span class="st">  </span><span class="kw">filter</span>(redner_fraktion <span class="op">!=</span><span class="st"> &quot;fraktionslos&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-13" data-line-number="13"><span class="st">  </span><span class="kw">filter</span>(id.x <span class="op">==</span><span class="st"> </span>id.y) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-14" data-line-number="14"><span class="st">  </span><span class="kw">group_by</span>(geschlecht) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-15" data-line-number="15"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">rede =</span> <span class="kw">paste</span>(rede, <span class="dt">collapse =</span> <span class="st">&quot; &quot;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-16" data-line-number="16"><span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-17" data-line-number="17"><span class="st">  </span><span class="kw">unnest_tokens</span>(word, rede) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-18" data-line-number="18"><span class="st">  </span><span class="kw">count</span>(geschlecht, word, <span class="dt">sort =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb42-19" data-line-number="19"></a>
+<a class="sourceLine" id="cb42-20" data-line-number="20">speech_total_words &lt;-<span class="st"> </span>speech_gender_words <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-21" data-line-number="21"><span class="st">  </span><span class="kw">group_by</span>(geschlecht) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summarize</span>(<span class="dt">total =</span> <span class="kw">sum</span>(n))</a>
+<a class="sourceLine" id="cb42-22" data-line-number="22"></a>
+<a class="sourceLine" id="cb42-23" data-line-number="23">speech_gender_words <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-24" data-line-number="24"><span class="st">  </span><span class="kw">left_join</span>(speech_total_words, <span class="dt">by =</span> <span class="st">&quot;geschlecht&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-25" data-line-number="25"><span class="st">  </span><span class="kw">bind_tf_idf</span>(word, geschlecht, n) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-26" data-line-number="26"><span class="st">  </span><span class="kw">arrange</span>(<span class="op">-</span>tf_idf) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-27" data-line-number="27"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">word =</span> <span class="kw">factor</span>(word, <span class="dt">levels =</span> <span class="kw">rev</span>(<span class="kw">unique</span>(word)))) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb42-28" data-line-number="28"><span class="st">  </span><span class="kw">group_by</span>(geschlecht) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb42-29" data-line-number="29"><span class="st">  </span><span class="kw">top_n</span>(<span class="dv">15</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb42-30" data-line-number="30"><span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb42-31" data-line-number="31"><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(word, tf_idf, <span class="dt">fill =</span> geschlecht)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb42-32" data-line-number="32"><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb42-33" data-line-number="33"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="ot">NULL</span>, <span class="dt">y =</span> <span class="st">&quot;tf-idf&quot;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb42-34" data-line-number="34"><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>geschlecht, <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb42-35" data-line-number="35"><span class="st">  </span><span class="kw">coord_flip</span>()</a></code></pre></div>
+<p><img src="bundestag_files/figure-html/unnamed-chunk-28-1.svg" width="672" style="display: block; margin: auto;" /></p>
+<p>Wir können tf-idf natürlich auch auf die Fraktionen anwenden:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" data-line-number="1">speech_fraktion_words &lt;-<span class="st"> </span>data_mdb <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-2" data-line-number="2"><span class="st">  </span><span class="kw">unnest</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-3" data-line-number="3"><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>geburtsjahr, <span class="op">-</span>anzahl_wahlperioden) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-4" data-line-number="4"><span class="st">  </span><span class="kw">filter</span>(wahlperioden <span class="op">==</span><span class="st"> </span><span class="dv">19</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-5" data-line-number="5"><span class="st">  </span><span class="kw">left_join</span>(prot_overview, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;id&quot;</span> =<span class="st"> &quot;redner_id&quot;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-6" data-line-number="6"><span class="st">  </span><span class="kw">left_join</span>(prot_speeches, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;rede_id&quot;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-7" data-line-number="7"><span class="st">  </span><span class="kw">filter</span>(präsidium <span class="op">==</span><span class="st"> </span><span class="ot">FALSE</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-8" data-line-number="8"><span class="st">  </span><span class="kw">filter</span>(typ <span class="op">!=</span><span class="st"> &quot;kommentar&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-9" data-line-number="9"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(redner_fraktion)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-10" data-line-number="10"><span class="st">  </span><span class="kw">filter</span>(redner_fraktion <span class="op">!=</span><span class="st"> &quot;fraktionslos&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-11" data-line-number="11"><span class="st">  </span><span class="kw">filter</span>(id.x <span class="op">==</span><span class="st"> </span>id.y) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-12" data-line-number="12"><span class="st">  </span><span class="kw">group_by</span>(redner_fraktion) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-13" data-line-number="13"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">rede =</span> <span class="kw">paste</span>(rede, <span class="dt">collapse =</span> <span class="st">&quot; &quot;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-14" data-line-number="14"><span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-15" data-line-number="15"><span class="st">  </span><span class="kw">unnest_tokens</span>(word, rede) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-16" data-line-number="16"><span class="st">  </span><span class="kw">count</span>(redner_fraktion, word, <span class="dt">sort =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb43-17" data-line-number="17"></a>
+<a class="sourceLine" id="cb43-18" data-line-number="18">fraktion_total_words &lt;-<span class="st"> </span>speech_fraktion_words <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-19" data-line-number="19"><span class="st">  </span><span class="kw">group_by</span>(redner_fraktion) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summarize</span>(<span class="dt">total =</span> <span class="kw">sum</span>(n))</a>
+<a class="sourceLine" id="cb43-20" data-line-number="20"></a>
+<a class="sourceLine" id="cb43-21" data-line-number="21">speech_fraktion_words <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-22" data-line-number="22"><span class="st">  </span><span class="kw">left_join</span>(fraktion_total_words, <span class="dt">by =</span> <span class="st">&quot;redner_fraktion&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-23" data-line-number="23"><span class="st">  </span><span class="kw">bind_tf_idf</span>(word, redner_fraktion, n) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-24" data-line-number="24"><span class="st">  </span><span class="kw">arrange</span>(<span class="op">-</span>tf_idf) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-25" data-line-number="25"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">word =</span> <span class="kw">factor</span>(word, <span class="dt">levels =</span> <span class="kw">rev</span>(<span class="kw">unique</span>(word)))) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb43-26" data-line-number="26"><span class="st">  </span><span class="kw">group_by</span>(redner_fraktion) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb43-27" data-line-number="27"><span class="st">  </span><span class="kw">top_n</span>(<span class="dv">15</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb43-28" data-line-number="28"><span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb43-29" data-line-number="29"><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(word, tf_idf, <span class="dt">fill =</span> redner_fraktion)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb43-30" data-line-number="30"><span class="st">  </span><span class="kw">geom_col</span>(<span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb43-31" data-line-number="31"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="ot">NULL</span>, <span class="dt">y =</span> <span class="st">&quot;tf-idf&quot;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb43-32" data-line-number="32"><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>redner_fraktion, <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb43-33" data-line-number="33"><span class="st">  </span><span class="kw">coord_flip</span>()</a></code></pre></div>
+<p><img src="bundestag_files/figure-html/unnamed-chunk-29-1.svg" width="672" style="display: block; margin: auto;" /></p>
+<p>WIRD NOCH VERVOLLSTÄNDIGT</p>
+</div>
+</div>
+<h3>Literatur- und Quellverzeichnis</h3>
+<div id="refs" class="references">
+<div id="ref-ramos_2003">
+<p>Ramos, Juan Enrique (2003): Using TF-IDF to Determine Word Relevance in Document Queries. Präsentiert auf: 2003,</p>
+</div>
 </div>
             </section>
 
@@ -232,7 +369,7 @@ Bei der Fraktion der Grünen ist der Anteil an Reden von Frauen hingegen sogar n
         </div>
       </div>
 <a href="data-02.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="literatur-und-quellverzeichnis.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="topic-modeling.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

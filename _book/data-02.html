@@ -135,7 +135,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="3.2" data-path="data-02.html"><a href="data-02.html#inhalte-der-reden"><i class="fa fa-check"></i><b>3.2</b> Inhalte der Reden</a></li>
 <li class="chapter" data-level="3.3" data-path="data-02.html"><a href="data-02.html#daten-der-abgeordneten"><i class="fa fa-check"></i><b>3.3</b> Daten der Abgeordneten</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="auswertung.html"><a href="auswertung.html"><i class="fa fa-check"></i><b>4</b> Auswertung</a></li>
+<li class="chapter" data-level="4" data-path="auswertung.html"><a href="auswertung.html"><i class="fa fa-check"></i><b>4</b> Auswertung</a><ul>
+<li class="chapter" data-level="4.1" data-path="auswertung.html"><a href="auswertung.html#lange-der-reden"><i class="fa fa-check"></i><b>4.1</b> Länge der Reden</a></li>
+<li class="chapter" data-level="4.2" data-path="auswertung.html"><a href="auswertung.html#inhalte-der-reden-1"><i class="fa fa-check"></i><b>4.2</b> Inhalte der Reden</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="topic-modeling.html"><a href="topic-modeling.html"><i class="fa fa-check"></i><b>5</b> Topic Modeling</a></li>
 <li class="chapter" data-level="" data-path="literatur-und-quellverzeichnis.html"><a href="literatur-und-quellverzeichnis.html"><i class="fa fa-check"></i>Literatur- und Quellverzeichnis</a></li>
 </ul>
 
@@ -232,7 +236,7 @@ Durch das Auslesen der Netzwerkdaten nach einem Klick auf die nächsten fünf Pr
 <a class="sourceLine" id="cb25-4" data-line-number="4"><span class="st">  </span><span class="kw">arrange</span>(<span class="op">-</span>reden) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb25-5" data-line-number="5"><span class="st">  </span>knitr<span class="op">::</span><span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Reden Nach Fraktion im Deutschen Bundestag&quot;</span>, <span class="dt">booktabs =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
 <table>
-<caption><span id="tab:unnamed-chunk-17">Tabelle 3.1: </span>Reden Nach Fraktion im Deutschen Bundestag</caption>
+<caption><span id="tab:unnamed-chunk-18">Tabelle 3.1: </span>Reden Nach Fraktion im Deutschen Bundestag</caption>
 <thead>
 <tr class="header">
 <th align="left">redner_fraktion</th>
@@ -282,7 +286,7 @@ Durch das Auslesen der Netzwerkdaten nach einem Klick auf die nächsten fünf Pr
 </tr>
 </tbody>
 </table>
-<p>Mit auswertung der Daten nach Fraktion stellen wir kleinere Probleme Fest: Anscheinend wurden die Grüne in einem Dokument nicht in der üblichen Schreibweise geschrieben. Und die Fraktion “Bremen” ist vermutlich auch in der falschen Spalte gelandet - es handelt sich nämlich um eine Rede des Bremer Bürgermeisters.
+<p>Mit auswertung der Daten nach Fraktion stellen wir kleinere Probleme fest: Anscheinend wurden die Grüne in einem Dokument nicht in der üblichen Schreibweise geschrieben. Und die Fraktion “Bremen” ist vermutlich auch in der falschen Spalte gelandet - es handelt sich nämlich um eine Rede des Bremer Bürgermeisters.
 Beide ändern wir entsprechend:</p>
 <div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" data-line-number="1">prot_overview &lt;-<span class="st"> </span>prot_overview <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb26-2" data-line-number="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">redner_fraktion =</span> <span class="kw">ifelse</span>(redner_fraktion <span class="op">==</span><span class="st"> &quot;Bündnis 90/Die Grünen&quot;, &quot;</span>BÜNDNIS <span class="dv">90</span><span class="op">/</span>DIE GRÜNEN<span class="st">&quot;, redner_fraktion)) %&gt;%</span></a>
@@ -290,7 +294,7 @@ Beide ändern wir entsprechend:</p>
 </div>
 <div id="inhalte-der-reden" class="section level2">
 <h2><span class="header-section-number">3.2</span> Inhalte der Reden</h2>
-<p>WIRD NOCH ERGÄNZT</p>
+<p>Auch die Inhalte der Reden sollen aus allen Protokollen ausgelesen werden. Eine Auswertung erfolgt später.</p>
 <div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" data-line-number="1">speech_extract &lt;-<span class="st"> </span><span class="kw">map</span>(prot_files, <span class="op">~</span><span class="kw">read_html</span>(.) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">xml_find_all</span>(<span class="st">&quot;//rede/*&quot;</span>))</a>
 <a class="sourceLine" id="cb27-2" data-line-number="2"></a>
 <a class="sourceLine" id="cb27-3" data-line-number="3"><span class="kw">class</span>(speech_extract) &lt;-<span class="st"> &quot;xml_nodeset&quot;</span></a>
@@ -347,7 +351,7 @@ Beide ändern wir entsprechend:</p>
 <a class="sourceLine" id="cb32-5" data-line-number="5"><span class="st">  </span><span class="kw">arrange</span>(<span class="op">-</span>n) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb32-6" data-line-number="6"><span class="st">  </span>knitr<span class="op">::</span><span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Bundestagsabgeordnete aller Wahlperioden nach Geschlecht&quot;</span>, <span class="dt">booktabs =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
 <table>
-<caption><span id="tab:unnamed-chunk-23">Tabelle 3.2: </span>Bundestagsabgeordnete aller Wahlperioden nach Geschlecht</caption>
+<caption><span id="tab:unnamed-chunk-25">Tabelle 3.2: </span>Bundestagsabgeordnete aller Wahlperioden nach Geschlecht</caption>
 <thead>
 <tr class="header">
 <th align="left">geschlecht</th>

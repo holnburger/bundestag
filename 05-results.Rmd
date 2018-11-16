@@ -53,3 +53,149 @@ Bei der Fraktion der Grünen ist der Anteil an Reden von Frauen hingegen sogar n
 Die keiner Fraktion zugeordneten Reden stammen vor allem von Regierungsmitgliedern. Nur bei Regierungsmitgliedern mit einem Mandat für den Bundestag kann ein Geschlecht zugeordnet werden -- der Anteil an Reden weiblicher Regierungsmitglieder fällt somit wohmöglich höher aus.
 
 Der überraschend hohe Anteil an Reden weiblicher Abgeordneter bei den Fraktionslosen abgeordneten geht auf Frauke Petry zurück, welche besonders häufig am Podium des Bundestags zu sehen ist -- siehe \@ref(uberblick-der-reden).
+
+## Länge der Reden
+
+Wir können nun auch die Reden der Politiker_innen anaysieren. Etwa, indem wir die durchschnittliche Länge (in Zeichen) zwischen Männern und frauen vergleichen.
+
+```{r rede_laenge, fig.align="center"}
+avg_rede_leange <- data_mdb %>%
+  unnest() %>%
+  select(-geburtsjahr, -anzahl_wahlperioden) %>%
+  filter(wahlperioden == 19) %>%
+  left_join(prot_overview, by = c("id" = "redner_id")) %>%
+  left_join(prot_speeches, by = c("rede_id")) %>%
+  filter(präsidium == FALSE) %>%
+  filter(typ != "kommentar") %>%
+  filter(!is.na(redner_fraktion)) %>%
+  filter(id.x == id.y) %>%
+  mutate(rede_laenge = nchar(rede)) %>%
+  group_by(geschlecht, rede_id) %>%
+  rename(Geschlecht = geschlecht) %>%
+  summarise(rede_laenge = sum(rede_laenge)) 
+
+ggplot(avg_rede_leange, aes(x = Geschlecht, y = rede_laenge, fill = Geschlecht)) +
+  geom_boxplot() +
+  labs(title = "Länge der Reden in Zeichen nach Geschlecht der Abgeordneten",
+       x = "Geschlecht", y = "Länge der Rede in Zeichen") +
+  guides(fill = FALSE) 
+```
+
+Wir sehen, dass Frauen durchscnittlich eine etwas geringere Redezeit aufweisen als Männer. Die tatsächliche Redezeit konnte allerdings nicht bestimmt werden, wir nähern uns durch die Anzahl der Zeichen in der Rede an einen solchen Wert an. 
+Die Abweichung zwischen den Redezeiten erscheint jedoch marginal. Hier könnte noch zwischen den Fraktionen unterschieden werden. Wir vergleichen die Redezeiten von Frauen nach Fraktion:
+
+```{r}
+data_mdb %>%
+  unnest() %>%
+  select(-geburtsjahr, -anzahl_wahlperioden) %>%
+  filter(wahlperioden == 19) %>%
+  left_join(prot_overview, by = c("id" = "redner_id")) %>%
+  left_join(prot_speeches, by = c("rede_id")) %>%
+  filter(präsidium == FALSE) %>%
+  filter(typ != "kommentar") %>%
+  filter(!is.na(redner_fraktion)) %>%
+  filter(redner_fraktion != "fraktionslos") %>%
+  filter(id.x == id.y) %>%
+  mutate(rede_laenge = nchar(rede)) %>%
+  group_by(geschlecht, rede_id, redner_fraktion) %>%
+  rename(Geschlecht = geschlecht, Fraktion = redner_fraktion) %>%
+  summarise(rede_laenge = sum(rede_laenge)) %>%
+  ggplot(aes(x = Fraktion, y = rede_laenge, fill = Fraktion)) +
+  geom_boxplot() +
+  facet_wrap(~Geschlecht) +
+  labs(title = "Länge der Rede in Zeichen nach Fraktion und Geschlecht",
+       y = "Länge der Rede in Zeichen", x = "") +
+  coord_flip() +
+  guides(fill = FALSE)
+```
+
+Hier sind kaum Unterschiede zwischen den verschiedenen Fraktionen festzustellen. (DIE FARBEN WERDEN NOCH AN DIE FRAKTIONEN ANGEPASST). Als nächstes stehen die Inhalte der Reden an.
+
+
+## Inhalte der Reden
+
+Wenn wir nach besonders häufigen Wörtern suchen würden, würden wir nur auf Stopwörter stoßen (der, die, das, ich, bin, …). Das wäre wenig gewinnbringend. Wir suchen deshalb nach Wörtern, welche häufiger vorkommen, aber nicht zu häufig -- und sich zwischen den Gruppen besonders unterscheiden. Wir greifen hierbei auf die *Term Frequency and Inverse Document Frequency* (tf-idf) Berechnung [@ramos_2003].
+HIER KOMMT NOCH DIE ERKLÄRUNG VON TF-IDF UND WIESO ES BEI ZWEI GRUPPEN (BZW. DOKUMENTEN) EHER NICHT GEEIGNET IST.
+
+```{r, message=FALSE, warning=FALSE, fig.align="center", fig.height=6}
+library(tidytext)
+
+speech_gender_words <- data_mdb %>%
+  unnest() %>%
+  select(-geburtsjahr, -anzahl_wahlperioden) %>%
+  filter(wahlperioden == 19) %>%
+  left_join(prot_overview, by = c("id" = "redner_id")) %>%
+  left_join(prot_speeches, by = c("rede_id")) %>%
+  filter(präsidium == FALSE) %>%
+  filter(typ != "kommentar") %>%
+  filter(!is.na(redner_fraktion)) %>%
+  filter(redner_fraktion != "fraktionslos") %>%
+  filter(id.x == id.y) %>%
+  group_by(geschlecht) %>%
+  summarise(rede = paste(rede, collapse = " ")) %>%
+  ungroup() %>%
+  unnest_tokens(word, rede) %>%
+  count(geschlecht, word, sort = TRUE)
+
+speech_total_words <- speech_gender_words %>%
+  group_by(geschlecht) %>% summarize(total = sum(n))
+
+speech_gender_words %>%
+  left_join(speech_total_words, by = "geschlecht") %>%
+  bind_tf_idf(word, geschlecht, n) %>%
+  arrange(-tf_idf) %>%
+  mutate(word = factor(word, levels = rev(unique(word)))) %>% 
+  group_by(geschlecht) %>% 
+  top_n(15) %>% 
+  ungroup() %>%
+  ggplot(aes(word, tf_idf, fill = geschlecht)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = NULL, y = "tf-idf") +
+  facet_wrap(~geschlecht, ncol = 2, scales = "free") +
+  coord_flip()
+```
+
+
+Wir können tf-idf natürlich auch auf die Fraktionen anwenden:
+
+```{r, warning=FALSE, message=FALSE, fig.align="center", fig.height=10}
+speech_fraktion_words <- data_mdb %>%
+  unnest() %>%
+  select(-geburtsjahr, -anzahl_wahlperioden) %>%
+  filter(wahlperioden == 19) %>%
+  left_join(prot_overview, by = c("id" = "redner_id")) %>%
+  left_join(prot_speeches, by = c("rede_id")) %>%
+  filter(präsidium == FALSE) %>%
+  filter(typ != "kommentar") %>%
+  filter(!is.na(redner_fraktion)) %>%
+  filter(redner_fraktion != "fraktionslos") %>%
+  filter(id.x == id.y) %>%
+  group_by(redner_fraktion) %>%
+  summarise(rede = paste(rede, collapse = " ")) %>%
+  ungroup() %>%
+  unnest_tokens(word, rede) %>%
+  count(redner_fraktion, word, sort = TRUE)
+
+fraktion_total_words <- speech_fraktion_words %>%
+  group_by(redner_fraktion) %>% summarize(total = sum(n))
+
+speech_fraktion_words %>%
+  left_join(fraktion_total_words, by = "redner_fraktion") %>%
+  bind_tf_idf(word, redner_fraktion, n) %>%
+  arrange(-tf_idf) %>%
+  mutate(word = factor(word, levels = rev(unique(word)))) %>% 
+  group_by(redner_fraktion) %>% 
+  top_n(15) %>% 
+  ungroup() %>%
+  ggplot(aes(word, tf_idf, fill = redner_fraktion)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = NULL, y = "tf-idf") +
+  facet_wrap(~redner_fraktion, ncol = 2, scales = "free") +
+  coord_flip()
+```
+
+WIRD NOCH VERVOLLSTÄNDIGT
+
+# Topic Modeling
+
+Mit LDA und dem preisgekrönten stm [@roberts_2018]. Wird noch vervollständigt. 

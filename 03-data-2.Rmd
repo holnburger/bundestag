@@ -48,7 +48,7 @@ prot_links %>% future_map(~download.file(., file.path("data/protokolle", basenam
 
 Wir waren erfolgreich und konnten in wenigsten Sekunden alle aktuellen Protokolle herunterladen. Wir können sie jetzt auslesen und dabei auch unsere bereits erstellten Funktionen verwenden.
 
-```{r, cache=TRUE}
+```{r, eval=TRUE}
 prot_files <- list.files("data/protokolle", full.names = TRUE)
 
 prot_extract <- map(prot_files, ~read_html(.) %>% xml_find_all("//rede"))
@@ -57,6 +57,11 @@ class(prot_extract) <- "xml_nodeset"
 
 prot_overview <- map_dfr(prot_extract, ~get_overview_df(.))
 ```
+
+```{r, include=FALSE}
+prot_overview <- read_rds("data/prot_overview.RDS")
+```
+
 
 ## Überblick der Reden
 
@@ -82,7 +87,7 @@ prot_overview %>%
   knitr::kable(caption = "Reden Nach Fraktion im Deutschen Bundestag", booktabs = TRUE)
 ```
 
-Mit auswertung der Daten nach Fraktion stellen wir kleinere Probleme Fest: Anscheinend wurden die Grüne in einem Dokument nicht in der üblichen Schreibweise geschrieben. Und die Fraktion "Bremen" ist vermutlich auch in der falschen Spalte gelandet - es handelt sich nämlich um eine Rede des Bremer Bürgermeisters.
+Mit auswertung der Daten nach Fraktion stellen wir kleinere Probleme fest: Anscheinend wurden die Grüne in einem Dokument nicht in der üblichen Schreibweise geschrieben. Und die Fraktion "Bremen" ist vermutlich auch in der falschen Spalte gelandet - es handelt sich nämlich um eine Rede des Bremer Bürgermeisters.
 Beide ändern wir entsprechend:
 
 ```{r}
@@ -93,12 +98,17 @@ prot_overview <- prot_overview %>%
 
 ## Inhalte der Reden
 
-WIRD NOCH ERGÄNZT
+Auch die Inhalte der Reden sollen aus allen Protokollen ausgelesen werden. Eine Auswertung erfolgt später.
 
-```{r}
+```{r, eval=FALSE}
 speech_extract <- map(prot_files, ~read_html(.) %>% xml_find_all("//rede/*"))
 
 class(speech_extract) <- "xml_nodeset"
 
 prot_speeches <- map_dfr(speech_extract, ~get_speeches_df(.))
 ```
+
+```{r, include=FALSE}
+prot_speeches <- read_rds("data/prot_speeches.RDS")
+```
+

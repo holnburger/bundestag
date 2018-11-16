@@ -111,6 +111,9 @@
 \usepackage[ngerman]{babel}
 \usepackage[utf8]{inputenc}
 
+% Für Quotes mit \begin{quote} und \end{quote}
+\usepackage{etoolbox}
+
 \setkomafont{disposition}{\normalcolor\bfseries}
 
 % Style - Seitennummern oben, Linie oben, keine Linien bei Kapiteln, Kapitel nicht abgesetzt
@@ -789,7 +792,7 @@ Wir können die Reden auch nach Fraktionen auswerten:
 
 \begin{table}
 
-\caption{\label{tab:unnamed-chunk-17}Reden Nach Fraktion im Deutschen Bundestag}
+\caption{\label{tab:unnamed-chunk-18}Reden Nach Fraktion im Deutschen Bundestag}
 \centering
 \begin{tabular}[t]{lr}
 \toprule
@@ -811,7 +814,7 @@ Bündnis 90/Die Grünen & 1\\
 \end{table}
 
 Mit auswertung der Daten nach Fraktion stellen wir kleinere Probleme
-Fest: Anscheinend wurden die Grüne in einem Dokument nicht in der
+fest: Anscheinend wurden die Grüne in einem Dokument nicht in der
 üblichen Schreibweise geschrieben. Und die Fraktion ``Bremen'' ist
 vermutlich auch in der falschen Spalte gelandet - es handelt sich
 nämlich um eine Rede des Bremer Bürgermeisters. Beide ändern wir
@@ -828,7 +831,8 @@ entsprechend:
 \hypertarget{inhalte-der-reden}{%
 \section{Inhalte der Reden}\label{inhalte-der-reden}}
 
-WIRD NOCH ERGÄNZT
+Auch die Inhalte der Reden sollen aus allen Protokollen ausgelesen
+werden. Eine Auswertung erfolgt später.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -938,7 +942,7 @@ auf eine bessere Darstellung in der PDF und der Webseite.
 
 \begin{table}
 
-\caption{\label{tab:unnamed-chunk-23}Bundestagsabgeordnete aller Wahlperioden nach Geschlecht}
+\caption{\label{tab:unnamed-chunk-25}Bundestagsabgeordnete aller Wahlperioden nach Geschlecht}
 \centering
 \begin{tabular}[t]{lrr}
 \toprule
@@ -1109,6 +1113,186 @@ Fraktionslosen abgeordneten geht auf Frauke Petry zurück, welche
 besonders häufig am Podium des Bundestags zu sehen ist -- siehe
 \ref{uberblick-der-reden}.
 
+\hypertarget{lange-der-reden}{%
+\section{Länge der Reden}\label{lange-der-reden}}
+
+Wir können nun auch die Reden der Politiker\_innen anaysieren. Etwa,
+indem wir die durchschnittliche Länge (in Zeichen) zwischen Männern und
+frauen vergleichen.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{avg_rede_leange <-}\StringTok{ }\NormalTok{data_mdb }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{geburtsjahr, }\OperatorTok{-}\NormalTok{anzahl_wahlperioden) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(wahlperioden }\OperatorTok{==}\StringTok{ }\DecValTok{19}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(prot_overview, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"id"}\NormalTok{ =}\StringTok{ "redner_id"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(prot_speeches, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"rede_id"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(präsidium }\OperatorTok{==}\StringTok{ }\OtherTok{FALSE}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(typ }\OperatorTok{!=}\StringTok{ "kommentar"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(}\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(redner_fraktion)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(id.x }\OperatorTok{==}\StringTok{ }\NormalTok{id.y) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{rede_laenge =} \KeywordTok{nchar}\NormalTok{(rede)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(geschlecht, rede_id) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{rename}\NormalTok{(}\DataTypeTok{Geschlecht =}\NormalTok{ geschlecht) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{rede_laenge =} \KeywordTok{sum}\NormalTok{(rede_laenge)) }
+
+\KeywordTok{ggplot}\NormalTok{(avg_rede_leange, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ Geschlecht, }\DataTypeTok{y =}\NormalTok{ rede_laenge, }\DataTypeTok{fill =}\NormalTok{ Geschlecht)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_boxplot}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =} \StringTok{"Länge der Reden in Zeichen nach Geschlecht der Abgeordneten"}\NormalTok{,}
+       \DataTypeTok{x =} \StringTok{"Geschlecht"}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Länge der Rede in Zeichen"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{guides}\NormalTok{(}\DataTypeTok{fill =} \OtherTok{FALSE}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{bundestag_files/figure-latex/rede_laenge-1} \end{center}
+
+Wir sehen, dass Frauen durchscnittlich eine etwas geringere Redezeit
+aufweisen als Männer. Die tatsächliche Redezeit konnte allerdings nicht
+bestimmt werden, wir nähern uns durch die Anzahl der Zeichen in der Rede
+an einen solchen Wert an. Die Abweichung zwischen den Redezeiten
+erscheint jedoch marginal. Hier könnte noch zwischen den Fraktionen
+unterschieden werden. Wir vergleichen die Redezeiten von Frauen nach
+Fraktion:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data_mdb }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{geburtsjahr, }\OperatorTok{-}\NormalTok{anzahl_wahlperioden) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(wahlperioden }\OperatorTok{==}\StringTok{ }\DecValTok{19}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(prot_overview, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"id"}\NormalTok{ =}\StringTok{ "redner_id"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(prot_speeches, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"rede_id"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(präsidium }\OperatorTok{==}\StringTok{ }\OtherTok{FALSE}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(typ }\OperatorTok{!=}\StringTok{ "kommentar"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(}\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(redner_fraktion)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(redner_fraktion }\OperatorTok{!=}\StringTok{ "fraktionslos"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(id.x }\OperatorTok{==}\StringTok{ }\NormalTok{id.y) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{rede_laenge =} \KeywordTok{nchar}\NormalTok{(rede)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(geschlecht, rede_id, redner_fraktion) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{rename}\NormalTok{(}\DataTypeTok{Geschlecht =}\NormalTok{ geschlecht, }\DataTypeTok{Fraktion =}\NormalTok{ redner_fraktion) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{rede_laenge =} \KeywordTok{sum}\NormalTok{(rede_laenge)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ Fraktion, }\DataTypeTok{y =}\NormalTok{ rede_laenge, }\DataTypeTok{fill =}\NormalTok{ Fraktion)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_boxplot}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{facet_wrap}\NormalTok{(}\OperatorTok{~}\NormalTok{Geschlecht) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{title =} \StringTok{"Länge der Rede in Zeichen nach Fraktion und Geschlecht"}\NormalTok{,}
+       \DataTypeTok{y =} \StringTok{"Länge der Rede in Zeichen"}\NormalTok{, }\DataTypeTok{x =} \StringTok{""}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_flip}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{guides}\NormalTok{(}\DataTypeTok{fill =} \OtherTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{bundestag_files/figure-latex/unnamed-chunk-27-1.pdf}
+
+Hier sind kaum Unterschiede zwischen den verschiedenen Fraktionen
+festzustellen. (DIE FARBEN WERDEN NOCH AN DIE FRAKTIONEN ANGEPASST). Als
+nächstes stehen die Inhalte der Reden an.
+
+\hypertarget{inhalte-der-reden-1}{%
+\section{Inhalte der Reden}\label{inhalte-der-reden-1}}
+
+Wenn wir nach besonders häufigen Wörtern suchen würden, würden wir nur
+auf Stopwörter stoßen (der, die, das, ich, bin, \ldots{}). Das wäre
+wenig gewinnbringend. Wir suchen deshalb nach Wörtern, welche häufiger
+vorkommen, aber nicht zu häufig -- und sich zwischen den Gruppen
+besonders unterscheiden. Wir greifen hierbei auf die \emph{Term
+Frequency and Inverse Document Frequency} (tf-idf) Berechnung (Ramos
+\protect\hyperlink{ref-ramos_2003}{2003}). HIER KOMMT NOCH DIE ERKLÄRUNG
+VON TF-IDF UND WIESO ES BEI ZWEI GRUPPEN (BZW. DOKUMENTEN) EHER NICHT
+GEEIGNET IST.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(tidytext)}
+
+\NormalTok{speech_gender_words <-}\StringTok{ }\NormalTok{data_mdb }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{geburtsjahr, }\OperatorTok{-}\NormalTok{anzahl_wahlperioden) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(wahlperioden }\OperatorTok{==}\StringTok{ }\DecValTok{19}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(prot_overview, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"id"}\NormalTok{ =}\StringTok{ "redner_id"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(prot_speeches, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"rede_id"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(präsidium }\OperatorTok{==}\StringTok{ }\OtherTok{FALSE}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(typ }\OperatorTok{!=}\StringTok{ "kommentar"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(}\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(redner_fraktion)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(redner_fraktion }\OperatorTok{!=}\StringTok{ "fraktionslos"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(id.x }\OperatorTok{==}\StringTok{ }\NormalTok{id.y) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(geschlecht) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{rede =} \KeywordTok{paste}\NormalTok{(rede, }\DataTypeTok{collapse =} \StringTok{" "}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest_tokens}\NormalTok{(word, rede) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{count}\NormalTok{(geschlecht, word, }\DataTypeTok{sort =} \OtherTok{TRUE}\NormalTok{)}
+
+\NormalTok{speech_total_words <-}\StringTok{ }\NormalTok{speech_gender_words }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(geschlecht) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{total =} \KeywordTok{sum}\NormalTok{(n))}
+
+\NormalTok{speech_gender_words }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(speech_total_words, }\DataTypeTok{by =} \StringTok{"geschlecht"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{bind_tf_idf}\NormalTok{(word, geschlecht, n) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{tf_idf) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{word =} \KeywordTok{factor}\NormalTok{(word, }\DataTypeTok{levels =} \KeywordTok{rev}\NormalTok{(}\KeywordTok{unique}\NormalTok{(word)))) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(geschlecht) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{top_n}\NormalTok{(}\DecValTok{15}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(word, tf_idf, }\DataTypeTok{fill =}\NormalTok{ geschlecht)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_col}\NormalTok{(}\DataTypeTok{show.legend =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \OtherTok{NULL}\NormalTok{, }\DataTypeTok{y =} \StringTok{"tf-idf"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{facet_wrap}\NormalTok{(}\OperatorTok{~}\NormalTok{geschlecht, }\DataTypeTok{ncol =} \DecValTok{2}\NormalTok{, }\DataTypeTok{scales =} \StringTok{"free"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_flip}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{bundestag_files/figure-latex/unnamed-chunk-28-1} \end{center}
+
+Wir können tf-idf natürlich auch auf die Fraktionen anwenden:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{speech_fraktion_words <-}\StringTok{ }\NormalTok{data_mdb }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{select}\NormalTok{(}\OperatorTok{-}\NormalTok{geburtsjahr, }\OperatorTok{-}\NormalTok{anzahl_wahlperioden) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(wahlperioden }\OperatorTok{==}\StringTok{ }\DecValTok{19}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(prot_overview, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"id"}\NormalTok{ =}\StringTok{ "redner_id"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(prot_speeches, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"rede_id"}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(präsidium }\OperatorTok{==}\StringTok{ }\OtherTok{FALSE}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(typ }\OperatorTok{!=}\StringTok{ "kommentar"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(}\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(redner_fraktion)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(redner_fraktion }\OperatorTok{!=}\StringTok{ "fraktionslos"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(id.x }\OperatorTok{==}\StringTok{ }\NormalTok{id.y) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(redner_fraktion) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{rede =} \KeywordTok{paste}\NormalTok{(rede, }\DataTypeTok{collapse =} \StringTok{" "}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{unnest_tokens}\NormalTok{(word, rede) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{count}\NormalTok{(redner_fraktion, word, }\DataTypeTok{sort =} \OtherTok{TRUE}\NormalTok{)}
+
+\NormalTok{fraktion_total_words <-}\StringTok{ }\NormalTok{speech_fraktion_words }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(redner_fraktion) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{summarize}\NormalTok{(}\DataTypeTok{total =} \KeywordTok{sum}\NormalTok{(n))}
+
+\NormalTok{speech_fraktion_words }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(fraktion_total_words, }\DataTypeTok{by =} \StringTok{"redner_fraktion"}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{bind_tf_idf}\NormalTok{(word, redner_fraktion, n) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{arrange}\NormalTok{(}\OperatorTok{-}\NormalTok{tf_idf) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{word =} \KeywordTok{factor}\NormalTok{(word, }\DataTypeTok{levels =} \KeywordTok{rev}\NormalTok{(}\KeywordTok{unique}\NormalTok{(word)))) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(redner_fraktion) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{top_n}\NormalTok{(}\DecValTok{15}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(word, tf_idf, }\DataTypeTok{fill =}\NormalTok{ redner_fraktion)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_col}\NormalTok{(}\DataTypeTok{show.legend =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \OtherTok{NULL}\NormalTok{, }\DataTypeTok{y =} \StringTok{"tf-idf"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{facet_wrap}\NormalTok{(}\OperatorTok{~}\NormalTok{redner_fraktion, }\DataTypeTok{ncol =} \DecValTok{2}\NormalTok{, }\DataTypeTok{scales =} \StringTok{"free"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{coord_flip}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{bundestag_files/figure-latex/unnamed-chunk-29-1} \end{center}
+
+WIRD NOCH VERVOLLSTÄNDIGT
+
+\hypertarget{topic-modeling}{%
+\chapter{Topic Modeling}\label{topic-modeling}}
+
+Mit LDA und dem preisgekrönten stm (Roberts et al.
+\protect\hyperlink{ref-roberts_2018}{2018}). Wird noch vervollständigt.
+
 \hypertarget{literatur--und-quellverzeichnis}{%
 \chapter*{Literatur- und
 Quellverzeichnis}\label{literatur--und-quellverzeichnis}}
@@ -1120,10 +1304,19 @@ Bäck, Hanna/Debus, Marc/Müller, Jochen (2014): Who Takes the
 Parliamentary Floor? The Role of Gender in Speech-Making in the Swedish
 "Riksdag". In: \emph{Political Research Quarterly}, 67 (3), 504--518.
 
+\leavevmode\hypertarget{ref-ramos_2003}{}%
+Ramos, Juan Enrique (2003): Using TF-IDF to Determine Word Relevance in
+Document Queries. Präsentiert auf: 2003,
+
 \leavevmode\hypertarget{ref-rcoreteam_2018}{}%
 R Core Team (2018): R: A Language and Environment for Statistical
 Computing. Vienna, Austria: R Foundation for Statistical Computing. Text
 abrufbar unter: \url{https://www.R-project.org/}.
+
+\leavevmode\hypertarget{ref-roberts_2018}{}%
+Roberts, Margaret E./Stewart, Brandon M./Tingley, Dustin (2018): Stm: R
+Package for Structural Topic Models. Text abrufbar unter:
+\url{http://www.structuraltopicmodel.com}.
 
 \leavevmode\hypertarget{ref-vaughan_2018}{}%
 Vaughan, Davis/Dancho, Matt (2018): Furrr: Apply Mapping Functions in
