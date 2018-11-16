@@ -128,7 +128,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Einleitung</a></li>
 <li class="chapter" data-level="2" data-path="data-01.html"><a href="data-01.html"><i class="fa fa-check"></i><b>2</b> Generelles zur Datenerhebung</a><ul>
 <li class="chapter" data-level="2.1" data-path="data-01.html"><a href="data-01.html#xml-knoten-und-attribute"><i class="fa fa-check"></i><b>2.1</b> XML-Knoten und Attribute</a></li>
-<li class="chapter" data-level="2.2" data-path="data-01.html"><a href="data-01.html#zwischenfazit"><i class="fa fa-check"></i><b>2.2</b> Zwischenfazit</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="data-02.html"><a href="data-02.html"><i class="fa fa-check"></i><b>3</b> Erhebung der Daten des 19. Bundestags</a><ul>
 <li class="chapter" data-level="3.1" data-path="data-02.html"><a href="data-02.html#uberblick-der-reden"><i class="fa fa-check"></i><b>3.1</b> Überblick der Reden</a></li>
@@ -222,9 +221,6 @@ Die Datenerhebung und Auswertung erfolgt mit der Programmiersprache R <span clas
 ##  9 ID1961… 11002812  Max            Straubinger     CDU/CSU        
 ## 10 ID1961… 11004941  Gyde           Jensen          FDP            
 ## # ... with 134 more rows, and 1 more variable: redner_rolle &lt;chr&gt;</code></pre>
-</div>
-<div id="zwischenfazit" class="section level2">
-<h2><span class="header-section-number">2.2</span> Zwischenfazit</h2>
 <p>Wir konnten mit wenigen Zeilen Code das XML-Format in einen Datenframe umwandeln, welcher uns die weitere Arbeit erheblich erleichter. So könnten wir sehr schnell sagen, wie viele Reden es von den einzelnen Fraktionen zur 61. Sitzung des 19. Bundestags gab:</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">overview_df <span class="op">%&gt;%</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb12-2" data-line-number="2"><span class="st">  </span><span class="kw">group_by</span>(redner_fraktion) <span class="op">%&gt;%</span></a>
@@ -322,7 +318,7 @@ Die Datenerhebung und Auswertung erfolgt mit der Programmiersprache R <span clas
 ## Letzter Satz. Wenn es also einen Gradmesser für die soziale Sicherheit in Deutschland gibt, dann ist das aus meiner Sicht eine gute Alterssicherung. Für eine gute Altersversorgung sorgen wir mit diesem Rentenpaket heute und jetzt. 
 ## Vielen Dank.</code></pre>
 <p>Somit könnten wir für dieses Protokoll die einzelnen Reden (aber zum Beispiel auch Zwischenfragen) von Abgeordneten gezielt auf deren Inhalte untersuchen. Wir können noch nicht die Zwischenrufe und den Applaus nach Abgeordneten bzw. Fraktionen auswerten. Dies wäre mit sogenannten <em>regular experesions</em> aber möglich.</p>
-<p>Wie wir alle aktuellen Protokolle auswerten, behandeln wir in Daten wir in Kapitel <a href="data-02.html#data-02">3</a>. Die beiden Funktionen speichern wir im Ordner “functions”.</p>
+<p>Wie wir alle aktuellen Protokolle auswerten, behandeln wir in Kapitel <a href="data-02.html#data-02">3</a>.</p>
 
 </div>
 </div>
